@@ -1,0 +1,154 @@
+// DONUTS - Music Producer Collaboration Platform
+// Entity Relationship Diagram for dbdiagram.io
+// MVP Requirements: User authentication, project management, session booking
+
+Table Users {
+  Id guid [primary key]
+  Email varchar(255) [unique, not null]
+  UserName varchar(50) [unique, not null]
+  PasswordHash varchar(255) [not null]
+  FirstName varchar(50) [not null]
+  LastName varchar(50) [not null]
+  UserType int [not null]
+  ProfileImageUrl varchar(500)
+  Bio text
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+  IsActive boolean [not null, default: true]
+}
+
+Table Projects {
+  Id guid [primary key]
+  Title varchar(100) [not null]
+  Description text
+  ArtworkUrl varchar(500)
+  ColorTheme varchar(7) [not null, default: '#FF6B9D']
+  CreatedById guid [not null]
+  Status int [not null, default: 1]
+  TrackOrder json
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+  IsActive boolean [not null, default: true]
+}
+
+Table Tracks {
+  Id guid [primary key]
+  ProjectId guid [not null]
+  Title varchar(200) [not null]
+  FileUrl varchar(500)
+  FileType varchar(10)
+  Duration time
+  OrderIndex int [not null]
+  UploadedById guid [not null]
+  Status int [not null, default: 1]
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+  IsActive boolean [not null, default: true]
+}
+
+Table HitListItems {
+  Id guid [primary key]
+  TrackId guid
+  ProjectId guid
+  CreatedById guid [not null]
+  Title varchar(200) [not null]
+  Description text
+  Priority int [not null, default: 2]
+  Status int [not null, default: 1]
+  DueDate datetime
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+  CompletedAt datetime
+  IsActive boolean [not null, default: true]
+}
+
+Table Sessions {
+  Id guid [primary key]
+  ProducerId guid [not null]
+  ArtistId guid [not null]
+  ProjectId guid
+  Title varchar(200) [not null]
+  Description text
+  ScheduledDate datetime [not null]
+  Duration time [not null]
+  Location varchar(200)
+  Status int [not null, default: 1]
+  BookedById guid [not null]
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+}
+
+// MANY-TO-MANY RELATIONSHIP TABLES (Join Tables)
+
+Table ProducerArtistCollaborations {
+  Id guid [primary key]
+  ProducerId guid [not null]
+  ArtistId guid [not null]
+  Status int [not null, default: 1]
+  StartedAt datetime [not null, default: `now()`]
+  EndedAt datetime
+  CreatedAt datetime [not null, default: `now()`]
+  
+  indexes {
+    (ProducerId, ArtistId) [unique, name: 'idx_producer_artist_unique']
+  }
+}
+
+Table ProjectCollaborators {
+  Id guid [primary key]
+  ProjectId guid [not null]
+  UserId guid [not null]
+  Role int [not null, default: 2]
+  CanEditTracks boolean [not null, default: true]
+  CanEditHitList boolean [not null, default: true]
+  CanReorderTracks boolean [not null, default: true]
+  CanChangeTheme boolean [not null, default: false]
+  InvitedAt datetime [not null, default: `now()`]
+  AcceptedAt datetime
+  InvitedById guid [not null]
+  
+  indexes {
+    (ProjectId, UserId) [unique, name: 'idx_project_user_unique']
+  }
+}
+
+Table SessionAttendees {
+  Id guid [primary key]
+  SessionId guid [not null]
+  UserId guid [not null]
+  Role int [not null]
+  Status int [not null, default: 1]
+  InvitedAt datetime [not null, default: `now()`]
+  ResponseAt datetime
+  InvitedById guid [not null]
+  
+  indexes {
+    (SessionId, UserId) [unique, name: 'idx_session_user_unique']
+  }
+}
+
+// FOREIGN KEY RELATIONSHIPS
+
+// One-to-Many Relationships
+Ref: Users.Id < Projects.CreatedById
+Ref: Projects.Id < Tracks.ProjectId
+Ref: Users.Id < Tracks.UploadedById
+Ref: Tracks.Id < HitListItems.TrackId
+Ref: Projects.Id < HitListItems.ProjectId
+Ref: Users.Id < HitListItems.CreatedById
+Ref: Users.Id < Sessions.ProducerId
+Ref: Users.Id < Sessions.ArtistId
+Ref: Users.Id < Sessions.BookedById
+Ref: Projects.Id < Sessions.ProjectId
+
+// Many-to-Many Relationships (via Join Tables)
+Ref: Users.Id < ProducerArtistCollaborations.ProducerId
+Ref: Users.Id < ProducerArtistCollaborations.ArtistId
+
+Ref: Projects.Id < ProjectCollaborators.ProjectId
+Ref: Users.Id < ProjectCollaborators.UserId
+Ref: Users.Id < ProjectCollaborators.InvitedById
+
+Ref: Sessions.Id < SessionAttendees.SessionId
+Ref: Users.Id < SessionAttendees.UserId
+Ref: Users.Id < SessionAttendees.InvitedById
