@@ -1,0 +1,28 @@
+/* Global Theme System CSS Variables and Classes */
+
+:root {
+    /* Default DONUTS theme colors */
+    --light-pink: #FFE5F0;
+    --dark-coral: #d66b6b;
+
+    /* Theme system CSS custom properties - will be overridden by ThemeContext */
+    --theme-primary: #FF6B9D;
+    --theme-secondary: #FFB3C6;
+    --theme-accent: #FF8FAB;
+    --theme-background: #FFF5F8;
+    --theme-text: #2C3E50;
+}
+
+/* Theme classes for additional styling hooks - shadow variables removed per user request */
+
+/* Global elements that should respond to theme changes */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for all themed elements */
+* {
+    transition-property: color, background-color, border-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}

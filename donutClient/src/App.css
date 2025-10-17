@@ -1,0 +1,42 @@
+/* Global Color Palette */
+:root {
+  --primary-coral: #E87A7A;
+  --light-pink: #FFE5E5;
+  --soft-pink: #F5E6E8;
+  --white: #FFFFFF;
+  --dark-coral: #D66B6B;
+  --text-dark: #4A4A4A;
+  --shadow: rgba(232, 122, 122, 0.2);
+}
+
+/* Global Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--light-pink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* App Container */
+.app {
+  min-height: 100vh;
+}
+
+/* Centered layout for auth pages */
+.app.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}

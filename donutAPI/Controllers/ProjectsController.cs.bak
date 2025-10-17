@@ -1,0 +1,331 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using DonutAPI.Data;
+using DonutAPI.Models;
+using DonutAPI.DTOs;
+
+namespace DonutAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class ProjectsController : ControllerBase
+    {
+        private readonly DonutDbContext _context;
+        private readonly UserManager<User> _userManager;
+
+        public ProjectsController(DonutDbContext context, UserManager<User> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        // GET: api/projects
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
+        {
+            var projects = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.UploadedBy)
+                .Include(p => p.HitListItems)
+                .Select(p => new ProjectDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    ArtworkUrl = p.ArtworkUrl,
+                    ColorTheme = p.ColorTheme,
+                    Status = p.Status,
+                    CreatedBy = new UserDto
+                    {
+                        Id = p.CreatedBy.Id,
+                        Email = p.CreatedBy.Email!,
+                        Username = p.CreatedBy.UserName!,
+                        FirstName = p.CreatedBy.FirstName,
+                        LastName = p.CreatedBy.LastName,
+                        FullName = p.CreatedBy.FullName,
+                        UserType = p.CreatedBy.UserType,
+                        ProfileImageUrl = p.CreatedBy.ProfileImageUrl,
+                        Bio = p.CreatedBy.Bio
+                    },
+                    Tracks = p.Tracks.Select(t => new TrackDto
+                    {
+                        Id = t.Id,
+                        Title = t.Title,
+                        FileUrl = t.FileUrl,
+                        FileType = t.FileType,
+                        Duration = t.Duration,
+                        OrderIndex = t.OrderIndex,
+                        Status = t.Status,
+                        UploadedBy = new UserDto
+                        {
+                            Id = t.UploadedBy.Id,
+                            Email = t.UploadedBy.Email!,
+                            Username = t.UploadedBy.UserName!,
+                            FirstName = t.UploadedBy.FirstName,
+                            LastName = t.UploadedBy.LastName,
+                            FullName = t.UploadedBy.FullName,
+                            UserType = t.UploadedBy.UserType,
+                            ProfileImageUrl = t.UploadedBy.ProfileImageUrl,
+                            Bio = t.UploadedBy.Bio
+                        }
+                    }).ToList(),
+                    TrackCount = p.Tracks.Count,
+                    HitListItemCount = p.HitListItems.Count
+                })
+                .ToListAsync();
+
+            return Ok(projects);
+        }
+
+        // GET: api/projects/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProjectDto>> GetProject(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.UploadedBy)
+                .Include(p => p.HitListItems)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            var projectDto = new ProjectDto
+            {
+                Id = project.Id,
+                Title = project.Title,
+                Description = project.Description,
+                ArtworkUrl = project.ArtworkUrl,
+                ColorTheme = project.ColorTheme,
+                Status = project.Status,
+                CreatedBy = new UserDto
+                {
+                    Id = project.CreatedBy.Id,
+                    Email = project.CreatedBy.Email!,
+                    Username = project.CreatedBy.UserName!,
+                    FirstName = project.CreatedBy.FirstName,
+                    LastName = project.CreatedBy.LastName,
+                    FullName = project.CreatedBy.FullName,
+                    UserType = project.CreatedBy.UserType,
+                    ProfileImageUrl = project.CreatedBy.ProfileImageUrl,
+                    Bio = project.CreatedBy.Bio
+                },
+                Tracks = project.Tracks.Select(t => new TrackDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    FileUrl = t.FileUrl,
+                    FileType = t.FileType,
+                    Duration = t.Duration,
+                    OrderIndex = t.OrderIndex,
+                    Status = t.Status,
+                    UploadedBy = new UserDto
+                    {
+                        Id = t.UploadedBy.Id,
+                        Email = t.UploadedBy.Email!,
+                        Username = t.UploadedBy.UserName!,
+                        FirstName = t.UploadedBy.FirstName,
+                        LastName = t.UploadedBy.LastName,
+                        FullName = t.UploadedBy.FullName,
+                        UserType = t.UploadedBy.UserType,
+                        ProfileImageUrl = t.UploadedBy.ProfileImageUrl,
+                        Bio = t.UploadedBy.Bio
+                    }
+                }).ToList(),
+                TrackCount = project.Tracks.Count,
+                HitListItemCount = project.HitListItems.Count
+            };
+
+            return Ok(projectDto);
+        }
+
+        // POST: api/projects
+        [HttpPost]
+        public async Task<ActionResult<ProjectDto>> CreateProject(CreateProjectDto createProjectDto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var project = new Project
+            {
+                Title = createProjectDto.Title,
+                Description = createProjectDto.Description,
+                ColorTheme = createProjectDto.ColorTheme,
+                CreatedById = user.Id,
+                Status = ProjectStatus.Active
+            };
+
+            _context.Projects.Add(project);
+            await _context.SaveChangesAsync();
+
+            // Reload with navigation properties
+            await _context.Entry(project)
+                .Reference(p => p.CreatedBy)
+                .LoadAsync();
+
+            var projectDto = new ProjectDto
+            {
+                Id = project.Id,
+                Title = project.Title,
+                Description = project.Description,
+                ArtworkUrl = project.ArtworkUrl,
+                ColorTheme = project.ColorTheme,
+                Status = project.Status,
+                CreatedBy = new UserDto
+                {
+                    Id = project.CreatedBy.Id,
+                    Email = project.CreatedBy.Email!,
+                    Username = project.CreatedBy.UserName!,
+                    FirstName = project.CreatedBy.FirstName,
+                    LastName = project.CreatedBy.LastName,
+                    FullName = project.CreatedBy.FullName,
+                    UserType = project.CreatedBy.UserType,
+                    ProfileImageUrl = project.CreatedBy.ProfileImageUrl,
+                    Bio = project.CreatedBy.Bio
+                },
+                Tracks = new List<TrackDto>(),
+                TrackCount = 0,
+                HitListItemCount = 0
+            };
+
+            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, projectDto);
+        }
+
+        // PUT: api/projects/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProject(int id, UpdateProjectDto updateProjectDto)
+        {
+            var project = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || project.CreatedById != user.Id)
+            {
+                return Forbid("You can only update your own projects");
+            }
+
+            // Update only provided fields
+            if (!string.IsNullOrEmpty(updateProjectDto.Title))
+                project.Title = updateProjectDto.Title;
+
+            if (updateProjectDto.Description != null)
+                project.Description = updateProjectDto.Description;
+
+            if (!string.IsNullOrEmpty(updateProjectDto.ColorTheme))
+                project.ColorTheme = updateProjectDto.ColorTheme;
+
+            if (updateProjectDto.Status.HasValue)
+                project.Status = updateProjectDto.Status.Value;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/projects/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProject(int id)
+        {
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || project.CreatedById != user.Id)
+            {
+                return Forbid("You can only delete your own projects");
+            }
+
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // GET: api/projects/my
+        [HttpGet("my")]
+        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetMyProjects()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var projects = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.UploadedBy)
+                .Include(p => p.HitListItems)
+                .Where(p => p.CreatedById == user.Id)
+                .Select(p => new ProjectDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    ArtworkUrl = p.ArtworkUrl,
+                    ColorTheme = p.ColorTheme,
+                    Status = p.Status,
+                    CreatedBy = new UserDto
+                    {
+                        Id = p.CreatedBy.Id,
+                        Email = p.CreatedBy.Email!,
+                        Username = p.CreatedBy.UserName!,
+                        FirstName = p.CreatedBy.FirstName,
+                        LastName = p.CreatedBy.LastName,
+                        FullName = p.CreatedBy.FullName,
+                        UserType = p.CreatedBy.UserType,
+                        ProfileImageUrl = p.CreatedBy.ProfileImageUrl,
+                        Bio = p.CreatedBy.Bio
+                    },
+                    Tracks = p.Tracks.Select(t => new TrackDto
+                    {
+                        Id = t.Id,
+                        Title = t.Title,
+                        FileUrl = t.FileUrl,
+                        FileType = t.FileType,
+                        Duration = t.Duration,
+                        OrderIndex = t.OrderIndex,
+                        Status = t.Status,
+                        UploadedBy = new UserDto
+                        {
+                            Id = t.UploadedBy.Id,
+                            Email = t.UploadedBy.Email!,
+                            Username = t.UploadedBy.UserName!,
+                            FirstName = t.UploadedBy.FirstName,
+                            LastName = t.UploadedBy.LastName,
+                            FullName = t.UploadedBy.FullName,
+                            UserType = t.UploadedBy.UserType,
+                            ProfileImageUrl = t.UploadedBy.ProfileImageUrl,
+                            Bio = t.UploadedBy.Bio
+                        }
+                    }).ToList(),
+                    TrackCount = p.Tracks.Count,
+                    HitListItemCount = p.HitListItems.Count
+                })
+                .ToListAsync();
+
+            return Ok(projects);
+        }
+    }
+}

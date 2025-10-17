@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "donuts_dev_db",
+            "database": "donuts_dev_db",
+            "username": "postgres"
+        }
+    ]
+}

@@ -1,0 +1,295 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using DonutAPI.Data;
+using DonutAPI.Models;
+using DonutAPI.DTOs;
+
+namespace DonutAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TracksController : ControllerBase
+    {
+        private readonly DonutDbContext _context;
+        private readonly UserManager<User> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public TracksController(DonutDbContext context, UserManager<User> userManager, IWebHostEnvironment webHostEnvironment)
+        {
+            _context = context;
+            _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        // GET: api/tracks/project/5
+        [HttpGet("project/{projectId}")]
+        public async Task<ActionResult<IEnumerable<TrackDto>>> GetProjectTracks(int projectId)
+        {
+            var project = await _context.Projects.FindAsync(projectId);
+            if (project == null)
+            {
+                return NotFound("Project not found");
+            }
+
+            var tracks = await _context.Tracks
+                .Include(t => t.UploadedBy)
+                .Where(t => t.ProjectId == projectId)
+                .OrderBy(t => t.OrderIndex)
+                .Select(t => new TrackDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    FileUrl = t.FileUrl,
+                    FileType = t.FileType,
+                    Duration = t.Duration,
+                    OrderIndex = t.OrderIndex,
+                    Status = t.Status,
+                    UploadedBy = t.UploadedBy.ToUserDto()
+                })
+                .ToListAsync();
+
+            return Ok(tracks);
+        }
+
+        // GET: api/tracks/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TrackDetailDto>> GetTrack(int id)
+        {
+            var track = await _context.Tracks
+                .Include(t => t.UploadedBy)
+                .Include(t => t.Project)
+                    .ThenInclude(p => p.CreatedBy)
+                .Include(t => t.HitListItems)
+                    .ThenInclude(h => h.CreatedBy)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (track == null)
+            {
+                return NotFound();
+            }
+
+            var trackDto = new TrackDetailDto
+            {
+                Id = track.Id,
+                Title = track.Title,
+                FileUrl = track.FileUrl,
+                FileType = track.FileType,
+                Duration = track.Duration,
+                OrderIndex = track.OrderIndex,
+                Status = track.Status,
+                UploadedBy = track.UploadedBy.ToUserDto(),
+                Project = new ProjectDto
+                {
+                    Id = track.Project.Id,
+                    Title = track.Project.Title,
+                    Description = track.Project.Description,
+                    ArtworkUrl = track.Project.ArtworkUrl,
+                    ColorTheme = track.Project.ColorTheme,
+                    Status = track.Project.Status,
+                    CreatedBy = track.Project.CreatedBy.ToUserDto(),
+                    Tracks = new List<TrackDto>(),
+                    TrackCount = 0,
+                    HitListItemCount = 0
+                },
+                HitListItems = track.HitListItems.Select(h => new HitListItemDto
+                {
+                    Id = h.Id,
+                    Title = h.Title,
+                    Description = h.Description,
+                    Priority = h.Priority,
+                    Status = h.Status,
+                    DueDate = h.DueDate,
+                    CompletedAt = h.CompletedAt,
+                    ProjectId = h.ProjectId,
+                    TrackId = h.TrackId,
+                    TrackTitle = track.Title,
+                    CreatedBy = h.CreatedBy.ToUserDto()
+                }).ToList()
+            };
+
+            return Ok(trackDto);
+        }
+
+        // POST: api/tracks
+        [HttpPost]
+        public async Task<ActionResult<TrackDto>> CreateTrack(CreateTrackDto createTrackDto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Verify project exists
+            var project = await _context.Projects.FindAsync(createTrackDto.ProjectId);
+            if (project == null)
+            {
+                return BadRequest("Project not found");
+            }
+
+            var track = new Track
+            {
+                Title = createTrackDto.Title,
+                ProjectId = createTrackDto.ProjectId,
+                OrderIndex = createTrackDto.OrderIndex,
+                Status = createTrackDto.Status,
+                UploadedById = user.Id
+            };
+
+            _context.Tracks.Add(track);
+            await _context.SaveChangesAsync();
+
+            // Reload with navigation properties
+            await _context.Entry(track)
+                .Reference(t => t.UploadedBy)
+                .LoadAsync();
+
+            var trackDto = new TrackDto
+            {
+                Id = track.Id,
+                Title = track.Title,
+                FileUrl = track.FileUrl,
+                FileType = track.FileType,
+                Duration = track.Duration,
+                OrderIndex = track.OrderIndex,
+                Status = track.Status,
+                UploadedBy = track.UploadedBy.ToUserDto()
+            };
+
+            return CreatedAtAction(nameof(GetTrack), new { id = track.Id }, trackDto);
+        }
+
+        // POST: api/tracks/5/upload
+        [HttpPost("{id}/upload")]
+        public async Task<IActionResult> UploadTrackFile(int id, [FromForm] TrackFileUploadDto uploadDto)
+        {
+            var track = await _context.Tracks
+                .Include(t => t.UploadedBy)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (track == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || track.UploadedById != user.Id)
+            {
+                return Forbid("You can only upload files to your own tracks");
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".mp3", ".wav", ".flac", ".m4a", ".aac" };
+            var fileExtension = Path.GetExtension(uploadDto.AudioFile.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest("Invalid file type. Allowed types: MP3, WAV, FLAC, M4A, AAC");
+            }
+
+            // Validate file size (e.g., 50MB max)
+            const long maxFileSize = 50 * 1024 * 1024; // 50MB
+            if (uploadDto.AudioFile.Length > maxFileSize)
+            {
+                return BadRequest("File size exceeds 50MB limit");
+            }
+
+            // Create uploads directory if it doesn't exist
+            var uploadsDir = Path.Combine(_webHostEnvironment.ContentRootPath, "uploads", "tracks");
+            Directory.CreateDirectory(uploadsDir);
+
+            // Generate unique filename
+            var fileName = $"{track.Id}_{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsDir, fileName);
+
+            // Save file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await uploadDto.AudioFile.CopyToAsync(stream);
+            }
+
+            // Update track with file info
+            track.FileUrl = $"/uploads/tracks/{fileName}";
+            track.FileType = fileExtension.TrimStart('.');
+
+            // TODO: Extract duration using audio analysis library (e.g., MediaInfo.NET)
+            // For now, we'll leave duration as null
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "File uploaded successfully", fileUrl = track.FileUrl });
+        }
+
+        // PUT: api/tracks/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTrack(int id, UpdateTrackDto updateTrackDto)
+        {
+            var track = await _context.Tracks
+                .Include(t => t.UploadedBy)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (track == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || track.UploadedById != user.Id)
+            {
+                return Forbid("You can only update your own tracks");
+            }
+
+            // Update only provided fields
+            if (!string.IsNullOrEmpty(updateTrackDto.Title))
+                track.Title = updateTrackDto.Title;
+
+            if (updateTrackDto.OrderIndex.HasValue)
+                track.OrderIndex = updateTrackDto.OrderIndex.Value;
+
+            if (updateTrackDto.Status.HasValue)
+                track.Status = updateTrackDto.Status.Value;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/tracks/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTrack(int id)
+        {
+            var track = await _context.Tracks
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (track == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || track.UploadedById != user.Id)
+            {
+                return Forbid("You can only delete your own tracks");
+            }
+
+            // Delete physical file if it exists
+            if (!string.IsNullOrEmpty(track.FileUrl))
+            {
+                var fileName = Path.GetFileName(track.FileUrl);
+                var filePath = Path.Combine(_webHostEnvironment.ContentRootPath, "uploads", "tracks", fileName);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            _context.Tracks.Remove(track);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+    }
+}
