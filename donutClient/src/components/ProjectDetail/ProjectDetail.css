@@ -371,8 +371,9 @@
 }
 
 .track-number {
-    background: var(--light-pink);
+    background: transparent;
     color: var(--primary-coral);
+    border: 2px solid var(--primary-coral);
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -731,4 +732,119 @@ input:checked+.slider:before {
         gap: 1rem;
         align-items: stretch;
     }
+}
+
+/* Drag and Drop Styling */
+.track-item {
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.track-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+    cursor: grabbing;
+}
+
+.track-item.drag-over {
+    border: 2px dashed var(--theme-primary);
+    background: var(--theme-secondary);
+    transform: translateY(-2px);
+}
+
+.drag-handle {
+    background: none !important;
+    border: none !important;
+    color: var(--theme-text) !important;
+    font-size: 1rem;
+    cursor: grab;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.drag-handle:hover {
+    background: var(--theme-secondary) !important;
+    opacity: 1;
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.track-item:hover .drag-handle {
+    opacity: 0.8;
+}
+
+/* Prevent text selection during drag */
+.track-item.dragging * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Drag and Drop Styles */
+.drag-handle {
+    background: none !important;
+    border: none !important;
+    color: var(--theme-text) !important;
+    font-size: 1rem;
+    cursor: grab;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.drag-handle:hover {
+    background: var(--theme-secondary) !important;
+    opacity: 1;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.track-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+    background: var(--theme-secondary);
+    border: 2px dashed var(--theme-primary);
+}
+
+.track-item.drag-over {
+    border-top: 3px solid var(--theme-primary);
+    background: var(--theme-secondary);
+    transform: translateY(-2px);
+}
+
+.track-item.drag-over::before {
+    content: "Drop here";
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    z-index: 1000;
+}
+
+.tracks-list {
+    position: relative;
+}
+
+.track-item {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.track-item:hover .drag-handle {
+    opacity: 1;
 }

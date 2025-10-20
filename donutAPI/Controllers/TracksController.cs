@@ -115,6 +115,131 @@ namespace DonutAPI.Controllers
             return Ok(trackDto);
         }
 
+        // POST: api/tracks/upload (Single-step upload: metadata + file)
+        [HttpPost("upload")]
+        [RequestSizeLimit(100 * 1024 * 1024)] // 100 MB limit
+        [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)] // 100 MB form limit
+        public async Task<ActionResult<TrackDto>> UploadTrack([FromForm] UploadTrackDto uploadDto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Verify project exists and user has access
+            var project = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .Include(p => p.Collaborators)
+                .FirstOrDefaultAsync(p => p.Id == uploadDto.ProjectId);
+
+            if (project == null)
+            {
+                return BadRequest("Project not found");
+            }
+
+            // Check if user has permission to upload to this project
+            bool hasAccess = project.CreatedById == user.Id ||
+                           project.Collaborators.Any(c => c.UserId == user.Id);
+
+            if (!hasAccess)
+            {
+                return Forbid("You don't have permission to upload tracks to this project");
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg" };
+            var fileExtension = Path.GetExtension(uploadDto.AudioFile.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest("Invalid file type. Allowed types: MP3, WAV, FLAC, M4A, AAC, OGG");
+            }
+
+            // Validate file size (100MB max)
+            const long maxFileSize = 100 * 1024 * 1024; // 100MB
+            if (uploadDto.AudioFile.Length > maxFileSize)
+            {
+                return BadRequest("File size exceeds 100MB limit");
+            }
+
+            // Create uploads directory if it doesn't exist
+            var uploadsDir = Path.Combine(_webHostEnvironment.ContentRootPath, "uploads", "tracks");
+            Directory.CreateDirectory(uploadsDir);
+
+            // Calculate order index if not provided
+            var orderIndex = uploadDto.OrderIndex;
+            if (orderIndex == 0)
+            {
+                var maxOrder = await _context.Tracks
+                    .Where(t => t.ProjectId == uploadDto.ProjectId)
+                    .MaxAsync(t => (int?)t.OrderIndex) ?? 0;
+                orderIndex = maxOrder + 1;
+            }
+
+            // Create track record first
+            var track = new Track
+            {
+                Title = uploadDto.Title,
+                ProjectId = uploadDto.ProjectId,
+                OrderIndex = orderIndex,
+                Status = uploadDto.Status,
+                UploadedById = user.Id,
+                FileType = fileExtension.TrimStart('.')
+            };
+
+            _context.Tracks.Add(track);
+            await _context.SaveChangesAsync(); // Save to get the track ID
+
+            try
+            {
+                // Generate unique filename using track ID
+                var fileName = $"{track.Id}_{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await uploadDto.AudioFile.CopyToAsync(stream);
+                }
+
+                // Update track with file info
+                track.FileUrl = $"/uploads/tracks/{fileName}";
+
+                // TODO: Extract duration using audio analysis library
+                // For now, we'll leave duration as null
+
+                await _context.SaveChangesAsync();
+
+                // Load navigation properties for response
+                await _context.Entry(track)
+                    .Reference(t => t.UploadedBy)
+                    .LoadAsync();
+
+                var trackDto = new TrackDto
+                {
+                    Id = track.Id,
+                    Title = track.Title,
+                    FileUrl = track.FileUrl,
+                    FileType = track.FileType,
+                    Duration = track.Duration,
+                    OrderIndex = track.OrderIndex,
+                    Status = track.Status,
+                    UploadedBy = track.UploadedBy.ToUserDto()
+                };
+
+                return CreatedAtAction(nameof(GetTrack), new { id = track.Id }, trackDto);
+            }
+            catch (Exception ex)
+            {
+                // If file save fails, remove the track record
+                _context.Tracks.Remove(track);
+                await _context.SaveChangesAsync();
+
+                return StatusCode(500, new { message = "Failed to save audio file", error = ex.Message });
+            }
+        }
+
         // POST: api/tracks
         [HttpPost]
         public async Task<ActionResult<TrackDto>> CreateTrack(CreateTrackDto createTrackDto)

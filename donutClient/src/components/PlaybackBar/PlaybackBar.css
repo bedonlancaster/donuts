@@ -1,0 +1,326 @@
+/* PlaybackBar Styles - Fixed Bottom Audio Player */
+
+.playback-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: var(--theme-background);
+    border-top: 1px solid var(--theme-secondary);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.playback-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    height: 100%;
+}
+
+/* Track Info Section */
+.track-info {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.track-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.track-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--theme-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    font-size: 0.8rem;
+    color: var(--theme-primary);
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Playback Controls Section */
+.playback-controls {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 600px;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: var(--theme-text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    outline: none;
+    /* Remove focus outline */
+}
+
+.control-btn:focus {
+    outline: none;
+    /* Ensure no focus outline */
+}
+
+.control-btn:hover {
+    background: var(--theme-secondary);
+    transform: scale(1.1);
+}
+
+.play-pause-btn {
+    background: var(--theme-primary) !important;
+    color: var(--theme-background) !important;
+    font-size: 1.4rem;
+    width: 48px;
+    height: 48px;
+}
+
+.play-pause-btn:hover {
+    background: var(--theme-accent) !important;
+    transform: scale(1.15);
+}
+
+/* Progress Section */
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.time-display {
+    font-size: 0.75rem;
+    color: var(--theme-text);
+    opacity: 0.7;
+    min-width: 35px;
+    text-align: center;
+}
+
+.progress-bar {
+    flex: 1;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.progress-track {
+    position: relative;
+    height: 4px;
+    background: var(--theme-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--theme-primary);
+    border-radius: 2px;
+    transition: width 0.1s ease;
+    position: relative;
+}
+
+.progress-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: var(--theme-primary);
+    border: 2px solid var(--theme-background);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.progress-bar:hover .progress-thumb {
+    opacity: 1;
+}
+
+.progress-bar:hover .progress-track {
+    height: 6px;
+}
+
+/* Volume Controls Section */
+.volume-controls {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: var(--theme-text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    outline: none;
+    /* Remove focus outline */
+}
+
+.volume-btn:focus {
+    outline: none;
+    /* Ensure no focus outline */
+}
+
+.volume-btn:hover {
+    background: var(--theme-secondary);
+}
+
+.volume-slider {
+    width: 80px;
+    height: 4px;
+    background: var(--theme-secondary);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.volume-slider:focus {
+    outline: none;
+    /* Remove focus outline */
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--theme-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--theme-background);
+    transition: transform 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--theme-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--theme-background);
+    transition: transform 0.2s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .playback-content {
+        padding: 0 1rem;
+    }
+
+    .track-info {
+        min-width: 120px;
+        max-width: 180px;
+    }
+
+    .control-buttons {
+        gap: 8px;
+    }
+
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .play-pause-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+    }
+
+    .progress-section {
+        gap: 8px;
+    }
+
+    .volume-controls {
+        min-width: 100px;
+    }
+
+    .volume-slider {
+        width: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .playback-bar {
+        height: 70px;
+    }
+
+    .volume-controls {
+        display: none;
+        /* Hide volume controls on very small screens */
+    }
+
+    .track-info {
+        min-width: 100px;
+        max-width: 140px;
+    }
+
+    .time-display {
+        font-size: 0.7rem;
+        min-width: 30px;
+    }
+}
+
+/* Add bottom padding to body when playback bar is visible */
+body.playback-active {
+    padding-bottom: 80px;
+}
+
+@media (max-width: 480px) {
+    body.playback-active {
+        padding-bottom: 70px;
+    }
+}

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
 using DonutAPI.Data;
 using DonutAPI.Models;
 
@@ -53,6 +54,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Add API controllers
 builder.Services.AddControllers();
 
+// Configure request body size limits for file uploads
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB
+});
+
 // Add CORS
 builder.Services.AddCors(options =>
 {
@@ -80,8 +92,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Serve static files (for uploaded artwork)
+// Serve static files (for uploaded content)
 app.UseStaticFiles();
+
+// Configure static files for uploads directory
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
 
 // Use CORS
 app.UseCors("AllowReactApp");

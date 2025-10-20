@@ -34,6 +34,39 @@ namespace DonutAPI.DTOs
         public IFormFile AudioFile { get; set; } = null!;
     }
 
+    // For single-step track upload (metadata + file)
+    public class UploadTrackDto
+    {
+        [Required]
+        [StringLength(200, MinimumLength = 1)]
+        public string Title { get; set; } = string.Empty;
+
+        [Required]
+        public int ProjectId { get; set; }
+
+        [Required]
+        public IFormFile AudioFile { get; set; } = null!;
+
+        public int OrderIndex { get; set; } = 0;
+        public TrackStatus Status { get; set; } = TrackStatus.Demo;
+    }
+
+    // For reordering tracks
+    public class ReorderTracksDto
+    {
+        [Required]
+        public List<TrackOrderDto> TrackOrders { get; set; } = new();
+    }
+
+    public class TrackOrderDto
+    {
+        [Required]
+        public int TrackId { get; set; }
+
+        [Required]
+        public int OrderIndex { get; set; }
+    }
+
     // Complete track response (already in ProjectDTOs.cs, but here for reference)
     public class TrackDetailDto
     {

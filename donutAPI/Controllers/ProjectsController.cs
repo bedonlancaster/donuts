@@ -135,17 +135,19 @@ namespace DonutAPI.Controllers
                             JoinedAt = c.JoinedAt,
                             AddedBy = c.AddedBy.ToUserDto()
                         }).ToList(),
-                Tracks = project.Tracks.Select(t => new TrackDto
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    FileUrl = t.FileUrl,
-                    FileType = t.FileType,
-                    Duration = t.Duration,
-                    OrderIndex = t.OrderIndex,
-                    Status = t.Status,
-                    UploadedBy = t.UploadedBy.ToUserDto()
-                }).ToList(),
+                Tracks = project.Tracks
+                    .OrderBy(t => t.OrderIndex)
+                    .Select(t => new TrackDto
+                    {
+                        Id = t.Id,
+                        Title = t.Title,
+                        FileUrl = t.FileUrl,
+                        FileType = t.FileType,
+                        Duration = t.Duration,
+                        OrderIndex = t.OrderIndex,
+                        Status = t.Status,
+                        UploadedBy = t.UploadedBy.ToUserDto()
+                    }).ToList(),
                 TrackCount = project.Tracks.Count,
                 HitListItemCount = project.HitListItems.Count
             };
@@ -625,6 +627,57 @@ namespace DonutAPI.Controllers
             {
                 return StatusCode(500, $"Error uploading artwork: {ex.Message}");
             }
+        }
+
+        // POST: api/projects/5/tracks/reorder
+        [HttpPost("{id}/tracks/reorder")]
+        public async Task<IActionResult> ReorderTracks(int id, ReorderTracksDto reorderDto)
+        {
+            var project = await _context.Projects
+                .Include(p => p.CreatedBy)
+                .Include(p => p.Collaborators)
+                .Include(p => p.Tracks)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+            {
+                return NotFound("Project not found");
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Check if user has permission to reorder tracks (project owner or collaborator)
+            bool hasAccess = project.CreatedById == user.Id ||
+                           project.Collaborators.Any(c => c.UserId == user.Id);
+
+            if (!hasAccess)
+            {
+                return Forbid("You don't have permission to reorder tracks in this project");
+            }
+
+            // Validate that all tracks belong to this project
+            var projectTrackIds = project.Tracks.Select(t => t.Id).ToHashSet();
+            var requestTrackIds = reorderDto.TrackOrders.Select(to => to.TrackId).ToHashSet();
+
+            if (!requestTrackIds.SetEquals(projectTrackIds))
+            {
+                return BadRequest("Track order list doesn't match project tracks");
+            }
+
+            // Update track order indices
+            foreach (var trackOrder in reorderDto.TrackOrders)
+            {
+                var track = project.Tracks.First(t => t.Id == trackOrder.TrackId);
+                track.OrderIndex = trackOrder.OrderIndex;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Track order updated successfully" });
         }
     }
 }

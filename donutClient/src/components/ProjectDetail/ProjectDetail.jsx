@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
+import { useAudioPlayer } from '../../context/AudioPlayerContext'
+import HitList from '../HitList/HitList'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './ProjectDetail.css'
 
@@ -39,15 +41,15 @@ function ProjectDetail({ user, onLogout }) {
     const { id: projectId } = useParams()
     const navigate = useNavigate()
     const { currentTheme, setProjectTheme: setContextTheme } = useTheme()
+    const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer()
     const [project, setProject] = useState(null)
-    const [projectTheme, setProjectTheme] = useState({ // Project-specific theme state
-        mode: 'Light',
-        palette: 'Coral'
-    })
+    const [projectTheme, setProjectTheme] = useState(null) // Start with null to avoid initial flash
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('tracks')
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [draggedTrack, setDraggedTrack] = useState(null)
+    const [dragOverIndex, setDragOverIndex] = useState(null)
 
     // Debug logging
     console.log('ProjectDetail component mounted')
@@ -75,13 +77,15 @@ function ProjectDetail({ user, onLogout }) {
         }
     }, [project])
 
-    // Apply theme to DOM whenever projectTheme changes
+    // Apply theme to DOM whenever projectTheme changes (only if theme is loaded)
     useEffect(() => {
-        console.log('🎨 Applying project theme to DOM:', projectTheme)
-        setContextTheme({
-            mode: projectTheme.mode,
-            palette: projectTheme.palette
-        })
+        if (projectTheme) { // Only apply theme if we have one loaded
+            console.log('🎨 Applying project theme to DOM:', projectTheme)
+            setContextTheme({
+                mode: projectTheme.mode,
+                palette: projectTheme.palette
+            })
+        }
     }, [projectTheme, setContextTheme])
 
     // Helper function to convert palette enum back to string
@@ -92,6 +96,8 @@ function ProjectDetail({ user, onLogout }) {
 
     // Theme management functions
     const cycleProjectTheme = () => {
+        if (!projectTheme) return // Don't cycle if theme not loaded yet
+
         const currentIndex = PALETTE_ORDER.indexOf(projectTheme.palette)
         const nextIndex = (currentIndex + 1) % PALETTE_ORDER.length
         const nextPalette = PALETTE_ORDER[nextIndex]
@@ -100,6 +106,8 @@ function ProjectDetail({ user, onLogout }) {
     }
 
     const handleProjectThemeMode = (isChecked) => {
+        if (!projectTheme) return // Don't change if theme not loaded yet
+
         const newMode = isChecked ? 'Dark' : 'Light'
         setProjectTheme(prev => ({ ...prev, mode: newMode }))
     }
@@ -161,6 +169,106 @@ function ProjectDetail({ user, onLogout }) {
             console.error('Logout error:', error)
         } finally {
             onLogout()
+        }
+    }
+
+    const handlePlayTrack = (track) => {
+        // Check if this track is already playing
+        if (currentTrack && currentTrack.id === track.id) {
+            // Toggle play/pause for current track
+            togglePlayPause()
+        } else {
+            // Play new track with project tracks as playlist
+            const trackList = project.tracks || []
+            playTrack(track, trackList)
+        }
+    }
+
+    // Drag and drop handlers
+    const handleDragStart = (e, track, index) => {
+        console.log('Drag start:', track.title, index)
+        setDraggedTrack({ track, index })
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/html', e.target.outerHTML)
+        e.target.style.opacity = '0.5'
+    }
+
+    const handleDragEnd = (e) => {
+        console.log('Drag end')
+        e.target.style.opacity = '1'
+        setDraggedTrack(null)
+        setDragOverIndex(null)
+    }
+
+    const handleDragOver = (e, index) => {
+        console.log('Drag over:', index)
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        setDragOverIndex(index)
+    }
+
+    const handleDragLeave = () => {
+        console.log('Drag leave')
+        setDragOverIndex(null)
+    }
+
+    const handleDrop = async (e, dropIndex) => {
+        console.log('Drop at index:', dropIndex)
+        e.preventDefault()
+
+        if (!draggedTrack || draggedTrack.index === dropIndex) {
+            setDraggedTrack(null)
+            setDragOverIndex(null)
+            return
+        }
+
+        const tracks = [...project.tracks]
+        const draggedItem = tracks[draggedTrack.index]
+
+        // Remove dragged item and insert at new position
+        tracks.splice(draggedTrack.index, 1)
+        tracks.splice(dropIndex, 0, draggedItem)
+
+        // Update order indices
+        const updatedTracks = tracks.map((track, index) => ({
+            ...track,
+            orderIndex: index + 1
+        }))
+
+        // Optimistically update UI
+        setProject(prev => ({ ...prev, tracks: updatedTracks }))
+
+        // Save to backend
+        try {
+            await updateTrackOrder(updatedTracks)
+        } catch (error) {
+            console.error('Failed to update track order:', error)
+            // Revert on error - you might want to refetch the project here
+        }
+
+        setDraggedTrack(null)
+        setDragOverIndex(null)
+    }
+
+    const updateTrackOrder = async (tracks) => {
+        const updates = tracks.map(track => ({
+            trackId: track.id,
+            orderIndex: track.orderIndex
+        }))
+
+        const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tracks/reorder`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ trackOrders: updates })
+        })
+
+        if (!response.ok) {
+            const errorText = await response.text()
+            console.error('Error response:', errorText)
+            throw new Error('Failed to update track order')
         }
     }
 
@@ -272,8 +380,10 @@ function ProjectDetail({ user, onLogout }) {
         )
     }
 
-    // Get current project theme colors
-    const activeTheme = getThemePreview(projectTheme.mode, projectTheme.palette)
+    // Get current project theme colors (with fallback)
+    const activeTheme = projectTheme
+        ? getThemePreview(projectTheme.mode, projectTheme.palette)
+        : getThemePreview('Light', 'Coral') // Fallback while loading
 
     return (
         <div
@@ -290,7 +400,7 @@ function ProjectDetail({ user, onLogout }) {
             {/* Header */}
             <div className="project-header">
                 <button onClick={() => navigate('/dashboard')} className="back-btn">
-                    ← Back to Dashboard
+                    ←
                 </button>
 
                 <div className="project-info">
@@ -365,13 +475,24 @@ function ProjectDetail({ user, onLogout }) {
                     <div className="tracks-section">
                         <div className="section-header">
                             <h2>Tracks</h2>
-                            <button className="add-btn">+ Upload Track</button>
+                            <button
+                                className="add-btn"
+                                onClick={() => navigate(`/project/${projectId}/upload-track`)}
+                            >
+                                + Upload Track
+                            </button>
                         </div>
 
                         {project.tracks && project.tracks.length > 0 ? (
                             <div className="tracks-list">
                                 {project.tracks.map((track, index) => (
-                                    <div key={track.id} className="track-item">
+                                    <div
+                                        key={track.id}
+                                        className={`track-item ${dragOverIndex === index ? 'drag-over' : ''} ${draggedTrack?.index === index ? 'dragging' : ''}`}
+                                        onDragOver={(e) => handleDragOver(e, index)}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={(e) => handleDrop(e, index)}
+                                    >
                                         <div className="track-number">{index + 1}</div>
                                         <div className="track-info">
                                             <h4>{track.title}</h4>
@@ -381,8 +502,32 @@ function ProjectDetail({ user, onLogout }) {
                                             {track.duration ? formatDuration(track.duration) : '--:--'}
                                         </div>
                                         <div className="track-actions">
-                                            <button className="play-btn">▶</button>
+                                            <button
+                                                className="play-btn"
+                                                onClick={() => handlePlayTrack(track)}
+                                                title={currentTrack && currentTrack.id === track.id && isPlaying ? 'Pause' : 'Play'}
+                                            >
+                                                {currentTrack && currentTrack.id === track.id && isPlaying ? '⏸' : '▶'}
+                                            </button>
                                             <button className="more-btn">⋯</button>
+                                            <div
+                                                className="drag-handle"
+                                                title="Drag to reorder"
+                                                draggable="true"
+                                                onDragStart={(e) => handleDragStart(e, track, index)}
+                                                onDragEnd={handleDragEnd}
+                                                onMouseDown={() => console.log('Mouse down on drag handle')}
+                                                onClick={() => console.log('Click on drag handle')}
+                                                role="button"
+                                                tabIndex={0}
+                                                style={{
+                                                    cursor: 'grab',
+                                                    userSelect: 'none',
+                                                    WebkitUserDrag: 'element'
+                                                }}
+                                            >
+                                                ⋮⋮
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -398,14 +543,7 @@ function ProjectDetail({ user, onLogout }) {
 
                 {activeTab === 'hitlist' && (
                     <div className="hitlist-section">
-                        <div className="section-header">
-                            <h2>Hit List</h2>
-                            <button className="add-btn">+ Add Item</button>
-                        </div>
-                        <div className="empty-state">
-                            <h3>Hit List coming soon</h3>
-                            <p>Keep track of your project milestones and ideas</p>
-                        </div>
+                        <HitList projectId={projectId} />
                     </div>
                 )}
 
@@ -464,8 +602,9 @@ function ProjectDetail({ user, onLogout }) {
                                     <label className="switch">
                                         <input
                                             type="checkbox"
-                                            checked={projectTheme.mode === 'Dark'}
+                                            checked={projectTheme?.mode === 'Dark'}
                                             onChange={(e) => handleProjectThemeMode(e.target.checked)}
+                                            disabled={!projectTheme} // Disable while loading
                                         />
                                         <span className="slider"></span>
                                     </label>
@@ -477,6 +616,7 @@ function ProjectDetail({ user, onLogout }) {
                                     type="button"
                                     className="theme-cycle-btn"
                                     onClick={cycleProjectTheme}
+                                    disabled={!projectTheme} // Disable while loading
                                     style={{
                                         backgroundColor: activeTheme.primary,
                                         border: `2px solid ${activeTheme.accent}`,
@@ -495,7 +635,7 @@ function ProjectDetail({ user, onLogout }) {
                                     marginTop: '1rem'
                                 }}>
                                     <strong style={{ color: activeTheme.primary }}>
-                                        {projectTheme.palette} - {projectTheme.mode} Mode
+                                        {projectTheme ? `${projectTheme.palette} - ${projectTheme.mode} Mode` : 'Loading theme...'}
                                     </strong>
                                     <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
                                         This is how your project theme will look with text and backgrounds.

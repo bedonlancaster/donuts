@@ -56,7 +56,21 @@ button:hover {
 
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
+}
+
+/* Remove focus outlines globally for a cleaner UI */
+*:focus {
+  outline: none;
+}
+
+/* Remove focus outlines from all interactive elements */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+a:focus {
+  outline: none;
 }
 
 @media (prefers-color-scheme: light) {
