@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './Dashboard.css'
@@ -6,45 +6,38 @@ import './Dashboard.css'
 function Dashboard({ user, onLogout }) {
     const navigate = useNavigate()
     const [selectedSection, setSelectedSection] = useState('donuts')
+    const [projects, setProjects] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
 
-    // Mock data for DONUTS (projects) - will be replaced with API calls
-    const mockDonuts = [
-        {
-            id: 1,
-            title: "Midnight Vibes",
-            artistName: "Sarah Chen",
-            artwork: null, // placeholder for now
-            status: "In Progress"
-        },
-        {
-            id: 2,
-            title: "Summer Breeze",
-            artistName: "Mike Rodriguez",
-            artwork: null,
-            status: "Mixing"
-        },
-        {
-            id: 3,
-            title: "City Lights",
-            artistName: "Alex Johnson",
-            artwork: null,
-            status: "Recording"
-        },
-        {
-            id: 4,
-            title: "Ocean Dreams",
-            artistName: "Taylor Swift",
-            artwork: null,
-            status: "Complete"
-        },
-        {
-            id: 5,
-            title: "Neon Nights",
-            artistName: "Chris Martin",
-            artwork: null,
-            status: "In Progress"
+    // Fetch user's projects from the API
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/projects', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (response.ok) {
+                    const projectsData = await response.json()
+                    setProjects(projectsData)
+                } else {
+                    setError('Failed to load projects')
+                }
+            } catch (err) {
+                console.error('Error fetching projects:', err)
+                setError('Network error loading projects')
+            } finally {
+                setLoading(false)
+            }
         }
-    ]
+
+        fetchProjects()
+    }, [])
 
     const handleLogout = async () => {
         try {
@@ -59,19 +52,23 @@ function Dashboard({ user, onLogout }) {
         }
     }
 
-    const renderDonutCard = (donut) => (
-        <div key={donut.id} className="donut-card">
+    const renderDonutCard = (project) => (
+        <div
+            key={project.id}
+            className="donut-card"
+            onClick={() => navigate(`/project/${project.id}`)}
+        >
             <div className="donut-artwork">
                 <img
-                    src={donutLogo}
-                    alt={donut.title}
+                    src={project.artworkUrl ? `http://localhost:5000${project.artworkUrl}` : donutLogo}
+                    alt={project.title}
                     className="donut-logo"
                 />
-                <div className="donut-status">{donut.status}</div>
+                <div className="donut-status">{project.status}</div>
             </div>
             <div className="donut-info">
-                <h3 className="donut-title">{donut.title}</h3>
-                <p className="donut-artist">{donut.artistName}</p>
+                <h3 className="donut-title">{project.title}</h3>
+                <p className="donut-artist">{project.artistName || 'No artist name'}</p>
             </div>
         </div>
     )
@@ -91,7 +88,18 @@ function Dashboard({ user, onLogout }) {
                 </div>
 
                 <div className="donuts-grid">
-                    {mockDonuts.map(renderDonutCard)}
+                    {loading ? (
+                        <div className="loading-message">Loading your DONUTs...</div>
+                    ) : error ? (
+                        <div className="error-message">{error}</div>
+                    ) : projects.length > 0 ? (
+                        projects.map(renderDonutCard)
+                    ) : (
+                        <div className="empty-state">
+                            <h3>No DONUTs yet!</h3>
+                            <p>Click "Create" to start your first collaborative project.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

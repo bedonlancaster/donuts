@@ -10,16 +10,20 @@ namespace DonutAPI.Models
 
     public enum ColorPalette
     {
-        Coral = 1,        // Default DONUTS coral/pink
-        Ocean = 2,        // Blues and teals
-        Forest = 3,       // Greens and mint
-        Sunset = 4,       // Warm oranges and reds
-        Lavender = 5,     // Purples and lilacs
-        Sunshine = 6,     // Yellows and golds
-        Earth = 7,        // Browns and tans
-        Aurora = 8,       // Multi-color gradients
-        Monochrome = 9,   // Grays and blacks
-        Neon = 10         // Bright electric colors
+        Coral = 1,        // Default DONUTS coral/pink - matches frontend
+        Peach = 2,        // Warm peach/orange tones - matches frontend
+        Sage = 3,         // Sage green tones - matches frontend  
+        Clay = 4,         // Clay/terracotta tones - matches frontend
+        Slate = 5,        // Slate blue-gray tones - matches frontend
+        Ocean = 6,        // Blues and teals
+        Forest = 7,       // Greens and mint
+        Sunset = 8,       // Warm oranges and reds
+        Lavender = 9,     // Purples and lilacs
+        Sunshine = 10,    // Yellows and golds
+        Earth = 11,       // Browns and tans
+        Aurora = 12,      // Multi-color gradients
+        Monochrome = 13,  // Grays and blacks
+        Neon = 14         // Bright electric colors
     }
 
     public class ProjectTheme
@@ -68,8 +72,40 @@ namespace DonutAPI.Models
                 ColorPalette.Coral,
                 new Dictionary<ThemeMode, ThemeColors>
                 {
-                    { ThemeMode.Light, new ThemeColors("#FF6B9D", "#FFB3C6", "#FF8FAB", "#FFF5F8", "#2C3E50") },
-                    { ThemeMode.Dark, new ThemeColors("#FF6B9D", "#8B4A6B", "#FF8FAB", "#1A1A1A", "#E8E8E8") }
+                    { ThemeMode.Light, new ThemeColors("#E87A7A", "#FFE5E5", "#D66B6B", "#FFFFFF", "#4A4A4A") },
+                    { ThemeMode.Dark, new ThemeColors("#FFE5E5", "#F0B8B8", "#FFF0F0", "#8B4A4A", "#FFFFFF") }
+                }
+            },
+            {
+                ColorPalette.Peach,
+                new Dictionary<ThemeMode, ThemeColors>
+                {
+                    { ThemeMode.Light, new ThemeColors("#F4A688", "#F7C4A0", "#F19A7B", "#FDF7F3", "#3D2B1F") },
+                    { ThemeMode.Dark, new ThemeColors("#F7C4A0", "#E6B89A", "#F5D4C4", "#8B5A42", "#FFFFFF") }
+                }
+            },
+            {
+                ColorPalette.Sage,
+                new Dictionary<ThemeMode, ThemeColors>
+                {
+                    { ThemeMode.Light, new ThemeColors("#8B9D77", "#A8B89A", "#98A888", "#F4F6F1", "#2D3A24") },
+                    { ThemeMode.Dark, new ThemeColors("#A8B89A", "#9BAA88", "#B8C7A5", "#556B47", "#FFFFFF") }
+                }
+            },
+            {
+                ColorPalette.Clay,
+                new Dictionary<ThemeMode, ThemeColors>
+                {
+                    { ThemeMode.Light, new ThemeColors("#C49B7C", "#D4B5A0", "#CC9F85", "#FAF6F2", "#3E2723") },
+                    { ThemeMode.Dark, new ThemeColors("#D4B5A0", "#C2A693", "#E0C4B0", "#7A5A47", "#FFFFFF") }
+                }
+            },
+            {
+                ColorPalette.Slate,
+                new Dictionary<ThemeMode, ThemeColors>
+                {
+                    { ThemeMode.Light, new ThemeColors("#7A8B99", "#A0B1BE", "#8A9BAA", "#F2F4F6", "#2C3E50") },
+                    { ThemeMode.Dark, new ThemeColors("#A0B1BE", "#8FA0AD", "#B5C6D3", "#4A5B69", "#FFFFFF") }
                 }
             },
             {

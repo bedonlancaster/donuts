@@ -48,6 +48,7 @@ namespace DonutAPI.Controllers
             {
                 Id = p.Id,
                 Title = p.Title,
+                ArtistName = p.ArtistName,
                 Description = p.Description,
                 ArtworkUrl = p.ArtworkUrl,
                 Status = p.Status,
@@ -84,9 +85,16 @@ namespace DonutAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectDto>> GetProject(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
             var project = await _context.Projects
                 .Include(p => p.CreatedBy)
                 .Include(p => p.Theme)
+                .Include(p => p.Collaborators)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Collaborators)
+                    .ThenInclude(c => c.AddedBy)
                 .Include(p => p.Tracks)
                     .ThenInclude(t => t.UploadedBy)
                 .Include(p => p.HitListItems)
@@ -97,15 +105,36 @@ namespace DonutAPI.Controllers
                 return NotFound();
             }
 
+            // Check if user has access to this project (creator or active collaborator)
+            var hasAccess = project.CreatedById == user.Id ||
+                           project.Collaborators.Any(c => c.UserId == user.Id && c.Status == CollaboratorStatus.Active);
+
+            if (!hasAccess)
+            {
+                return Forbid();
+            }
+
             var projectDto = new ProjectDto
             {
                 Id = project.Id,
                 Title = project.Title,
+                ArtistName = project.ArtistName,
                 Description = project.Description,
                 ArtworkUrl = project.ArtworkUrl,
                 Status = project.Status,
                 CreatedBy = project.CreatedBy.ToUserDto(),
                 Theme = project.Theme != null ? MapThemeToDto(project.Theme) : null,
+                Collaborators = project.Collaborators
+                        .Where(c => c.Status == CollaboratorStatus.Active)
+                        .Select(c => new CollaboratorDto
+                        {
+                            Id = c.Id,
+                            User = c.User.ToUserDto(),
+                            Role = c.Role,
+                            Status = c.Status,
+                            JoinedAt = c.JoinedAt,
+                            AddedBy = c.AddedBy.ToUserDto()
+                        }).ToList(),
                 Tracks = project.Tracks.Select(t => new TrackDto
                 {
                     Id = t.Id,
@@ -134,6 +163,7 @@ namespace DonutAPI.Controllers
             var project = new Project
             {
                 Title = createProjectDto.Title,
+                ArtistName = createProjectDto.ArtistName,
                 Description = createProjectDto.Description,
                 CreatedById = user.Id,
                 Status = ProjectStatus.Active
@@ -223,6 +253,9 @@ namespace DonutAPI.Controllers
             // Update only provided fields
             if (!string.IsNullOrEmpty(updateProjectDto.Title))
                 project.Title = updateProjectDto.Title;
+
+            if (updateProjectDto.ArtistName != null)
+                project.ArtistName = updateProjectDto.ArtistName;
 
             if (updateProjectDto.Description != null)
                 project.Description = updateProjectDto.Description;
@@ -329,6 +362,7 @@ namespace DonutAPI.Controllers
                 {
                     Id = p.Id,
                     Title = p.Title,
+                    ArtistName = p.ArtistName,
                     Description = p.Description,
                     ArtworkUrl = p.ArtworkUrl,
                     Status = p.Status,
@@ -524,6 +558,73 @@ namespace DonutAPI.Controllers
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+        }
+
+        // POST: api/projects/5/artwork
+        [HttpPost("{id}/artwork")]
+        public async Task<IActionResult> UploadArtwork(int id, IFormFile artworkFile)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            if (project == null) return NotFound("Project not found");
+
+            // Check if user has permission to upload artwork (creator or active collaborator)
+            var hasPermission = project.CreatedById == user.Id ||
+                               await _context.ProjectCollaborators
+                                   .AnyAsync(c => c.ProjectId == id && c.UserId == user.Id && c.Status == CollaboratorStatus.Active);
+
+            if (!hasPermission) return Forbid("You don't have permission to upload artwork for this project");
+
+            if (artworkFile == null || artworkFile.Length == 0)
+                return BadRequest("No artwork file provided");
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(artworkFile.ContentType.ToLower()))
+                return BadRequest("Invalid file type. Only JPEG, PNG, GIF, and WebP files are allowed.");
+
+            // Validate file size (max 10MB)
+            if (artworkFile.Length > 10 * 1024 * 1024)
+                return BadRequest("File size must be less than 10MB");
+
+            try
+            {
+                // Create uploads directory if it doesn't exist
+                var uploadsPath = Path.Combine("wwwroot", "uploads", "artwork");
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                // Generate unique filename
+                var fileExtension = Path.GetExtension(artworkFile.FileName);
+                var fileName = $"{project.Id}_{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // Delete old artwork file if exists
+                if (!string.IsNullOrEmpty(project.ArtworkUrl))
+                {
+                    var oldFilePath = Path.Combine("wwwroot", project.ArtworkUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                        System.IO.File.Delete(oldFilePath);
+                }
+
+                // Save new file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await artworkFile.CopyToAsync(stream);
+                }
+
+                // Update project with new artwork URL
+                project.ArtworkUrl = $"/uploads/artwork/{fileName}";
+                await _context.SaveChangesAsync();
+
+                return Ok(new { artworkUrl = project.ArtworkUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error uploading artwork: {ex.Message}");
+            }
         }
     }
 }

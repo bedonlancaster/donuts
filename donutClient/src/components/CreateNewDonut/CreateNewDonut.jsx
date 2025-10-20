@@ -2,6 +2,35 @@ import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import './CreateNewDonut.css'
 
+// Color palettes for theme preview and creation
+const COLOR_PALETTES = {
+    Coral: {
+        light: { primary: '#E87A7A', secondary: '#FFE5E5', accent: '#D66B6B', background: '#FFFFFF', text: '#4A4A4A' },
+        dark: { primary: '#FFE5E5', secondary: '#F0B8B8', accent: '#FFF0F0', background: '#8B4A4A', text: '#FFFFFF' }
+    },
+    Peach: {
+        light: { primary: '#F4A688', secondary: '#F7C4A0', accent: '#F19A7B', background: '#FDF7F3', text: '#3D2B1F' },
+        dark: { primary: '#F7C4A0', secondary: '#E6B89A', accent: '#F5D4C4', background: '#8B5A42', text: '#FFFFFF' }
+    },
+    Sage: {
+        light: { primary: '#8B9D77', secondary: '#A8B89A', accent: '#98A888', background: '#F4F6F1', text: '#2D3A24' },
+        dark: { primary: '#A8B89A', secondary: '#9BAA88', accent: '#B8C7A5', background: '#556B47', text: '#FFFFFF' }
+    },
+    Clay: {
+        light: { primary: '#C49B7C', secondary: '#D4B5A0', accent: '#CC9F85', background: '#FAF6F2', text: '#3E2723' },
+        dark: { primary: '#D4B5A0', secondary: '#C2A693', accent: '#E0C4B0', background: '#7A5A47', text: '#FFFFFF' }
+    },
+    Slate: {
+        light: { primary: '#7A8B99', secondary: '#A0B1BE', accent: '#8A9BAA', background: '#F2F4F6', text: '#2C3E50' },
+        dark: { primary: '#A0B1BE', secondary: '#8FA0AD', accent: '#B5C6D3', background: '#4A5B69', text: '#FFFFFF' }
+    }
+}
+
+// Helper function for theme preview
+const getThemePreview = (mode, palette) => {
+    return COLOR_PALETTES[palette] ? COLOR_PALETTES[palette][mode.toLowerCase()] : COLOR_PALETTES.Coral.light
+}
+
 // Theme display names and descriptions
 // Theme palette display names for UI
 const PALETTE_INFO = {
@@ -22,13 +51,12 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
 
     const [formData, setFormData] = useState({
         title: '',
+        artistName: '',
         description: '',
         artwork: null, // File object for album artwork
         theme: {
             mode: 'Light',
-            palette: 'Coral',
-            emotionalTone: '',
-            visualDescription: ''
+            palette: 'Coral'
         },
         collaborators: [] // Array of selected collaborators
     })
@@ -43,26 +71,23 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
     const [isLoading, setIsLoading] = useState(false)
 
     // Theme palette order for cycling
-    const PALETTE_ORDER = ['coral', 'peach', 'sage', 'clay', 'slate', 'salmon', 'moss', 'dusk', 'stone', 'mist']
+    const PALETTE_ORDER = ['Coral', 'Peach', 'Sage', 'Clay', 'Slate']
 
     // Convert frontend palette names to backend enum values
     const getPaletteEnumValue = (paletteName) => {
-        const paletteMap = {
-            'coral': 1, 'peach': 1, // Map both coral and peach to Coral
-            'sage': 3, 'moss': 3,   // Map both to Forest
-            'clay': 7, 'stone': 7,  // Map both to Earth
-            'slate': 9, 'mist': 9,  // Map both to Monochrome 
-            'salmon': 4, 'dusk': 5  // Map salmon to Sunset, dusk to Lavender
-        }
-        return paletteMap[paletteName.toLowerCase()] || 1 // Default to Coral
+        const paletteMap = { 'Coral': 1, 'Peach': 2, 'Sage': 3, 'Clay': 4, 'Slate': 5 }
+        return paletteMap[paletteName] || 1 // Default to Coral
     }
 
     const cycleToNextTheme = () => {
-        const currentIndex = PALETTE_ORDER.indexOf(formData.theme.palette.toLowerCase())
+        console.log('Current palette:', formData.theme.palette)
+        console.log('Available palettes:', PALETTE_ORDER)
+        const currentIndex = PALETTE_ORDER.indexOf(formData.theme.palette)
         const nextIndex = (currentIndex + 1) % PALETTE_ORDER.length
         const nextPalette = PALETTE_ORDER[nextIndex]
+        console.log('Cycling from', formData.theme.palette, 'to', nextPalette)
 
-        handleThemeChange('palette', nextPalette.charAt(0).toUpperCase() + nextPalette.slice(1))
+        handleThemeChange('palette', nextPalette)
     }
 
     const handleInputChange = (e) => {
@@ -125,22 +150,32 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
             theme: updatedTheme
         }))
 
-        // Apply theme preview to DOM in real-time
-        setPreviewTheme({
-            mode: updatedTheme.mode,
-            palette: updatedTheme.palette
-        })
+        // Theme preview will be applied automatically by useEffect
+        console.log('Theme changed:', updatedTheme.mode, updatedTheme.palette)
     }
 
-    // Apply initial theme on mount and reset on unmount
+
+
+    // Apply initial theme on mount and track changes
     useEffect(() => {
-        // Apply initial theme preview only on mount
+        console.log('🎨 Applying theme preview:', formData.theme.mode, formData.theme.palette)
         setPreviewTheme({
             mode: formData.theme.mode,
             palette: formData.theme.palette
         })
 
-        // Reset theme when component unmounts
+        // Debug: Log current CSS variables
+        setTimeout(() => {
+            const root = document.documentElement
+            const primary = getComputedStyle(root).getPropertyValue('--theme-primary')
+            const secondary = getComputedStyle(root).getPropertyValue('--theme-secondary')
+            const background = getComputedStyle(root).getPropertyValue('--theme-background')
+            console.log('🎨 CSS Variables applied:', { primary, secondary, background })
+        }, 100)
+    }, [formData.theme.mode, formData.theme.palette]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Reset theme when component unmounts
+    useEffect(() => {
         return () => {
             resetToDefaultTheme()
         }
@@ -191,7 +226,8 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     userId: user.id,
                     username: user.username,
                     displayName: user.displayName,
-                    role: 'Collaborator'
+                    email: user.email,
+                    role: 'Artist'  // Default to Artist, can be changed in UI
                 }]
             }))
         }
@@ -242,16 +278,29 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
 
         try {
             // Create the project first
+            // Get the actual colors for the selected theme
+            const themeColors = getThemePreview(formData.theme.mode, formData.theme.palette)
+
             const projectData = {
                 title: formData.title.trim(),
+                artistName: formData.artistName.trim() || null,
                 description: formData.description.trim(),
                 theme: {
                     mode: formData.theme.mode === 'Light' ? 1 : 2, // ThemeMode enum values
                     palette: getPaletteEnumValue(formData.theme.palette),
-                    emotionalTone: formData.theme.emotionalTone.trim() || null,
-                    visualDescription: formData.theme.visualDescription.trim() || null
+                    primaryColor: themeColors.primary,
+                    secondaryColor: themeColors.secondary,
+                    accentColor: themeColors.accent,
+                    backgroundColor: themeColors.background,
+                    textColor: themeColors.text
                 }
             }
+
+            console.log('🎨 Theme Debug - CreateNewDonut:')
+            console.log('Form theme:', formData.theme)
+            console.log('Theme colors:', themeColors)
+            console.log('Final project data:', projectData)
+            console.log('Palette enum value:', getPaletteEnumValue(formData.theme.palette))
 
             const response = await fetch('http://localhost:5000/api/projects', {
                 method: 'POST',
@@ -265,10 +314,71 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
             if (response.ok) {
                 const newProject = await response.json()
 
-                // TODO: Add collaborators if any were selected
-                // Need to implement email-based collaborator system or modify API
+                // Upload artwork if provided
+                if (formData.artwork) {
+                    try {
+                        const artworkFormData = new FormData()
+                        artworkFormData.append('artworkFile', formData.artwork)
+
+                        const artworkResponse = await fetch(`http://localhost:5000/api/projects/${newProject.id}/artwork`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            body: artworkFormData
+                        })
+
+                        if (artworkResponse.ok) {
+                            const artworkResult = await artworkResponse.json()
+                            console.log('Artwork uploaded successfully:', artworkResult.artworkUrl)
+                            // Update newProject with artwork URL for the callback
+                            newProject.artworkUrl = artworkResult.artworkUrl
+                        } else {
+                            const artworkError = await artworkResponse.text()
+                            console.error('Failed to upload artwork:', artworkError)
+                            setErrors(prev => ({
+                                ...prev,
+                                artwork: 'Project created but artwork upload failed. You can add artwork later.'
+                            }))
+                        }
+                    } catch (artworkError) {
+                        console.error('Artwork upload error:', artworkError)
+                        setErrors(prev => ({
+                            ...prev,
+                            artwork: 'Project created but artwork upload failed. You can add artwork later.'
+                        }))
+                    }
+                }
+
+                // Add collaborators if any were selected
                 if (formData.collaborators.length > 0) {
-                    console.log('Collaborators selected but not implemented yet:', formData.collaborators)
+                    console.log('Adding collaborators to project:', formData.collaborators)
+
+                    for (const collaborator of formData.collaborators) {
+                        try {
+                            const collabResponse = await fetch(`http://localhost:5000/api/projects/${newProject.id}/collaborators`, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    email: collaborator.email,
+                                    role: collaborator.role === 'Producer' ? 1 :
+                                        collaborator.role === 'Artist' ? 2 :
+                                            collaborator.role === 'Engineer' ? 3 :
+                                                collaborator.role === 'Songwriter' ? 4 :
+                                                    collaborator.role === 'Vocalist' ? 5 : 2 // Default to Artist
+                                })
+                            })
+
+                            if (collabResponse.ok) {
+                                console.log(`Successfully added collaborator: ${collaborator.email}`)
+                            } else {
+                                console.error(`Failed to add collaborator ${collaborator.email}:`, await collabResponse.text())
+                            }
+                        } catch (error) {
+                            console.error(`Error adding collaborator ${collaborator.email}:`, error)
+                        }
+                    }
                 }
 
                 console.log('DONUT created successfully!', newProject)
@@ -303,10 +413,13 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
         <div className="create-donut">
             <div className="create-donut-container">
                 <div className="create-header">
-                    <button className="back-btn" onClick={() => {
-                        resetToDefaultTheme()
-                        onBack()
-                    }}>← Back</button>
+                    <button
+                        className="back-btn"
+                        onClick={() => {
+                            resetToDefaultTheme()
+                            onBack()
+                        }}
+                    >← Back</button>
                     <h1>Create New DONUT</h1>
                     <p className="create-subtitle">
                         {user.isProducer
@@ -316,48 +429,10 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="create-form">
-                    {errors.general && (
-                        <div className="error-message general-error">
-                            {errors.general}
-                        </div>
-                    )}
-
-                    {/* Left Section - Basic Info */}
-                    <div className="form-section">
-                        <h3 className="section-title">Project Details</h3>
-
-                        <div className="form-group">
-                            <label htmlFor="title" className="form-label">DONUT Title</label>
-                            <input
-                                type="text"
-                                id="title"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleInputChange}
-                                className={`form-input ${errors.title ? 'error' : ''}`}
-                                placeholder="Enter your project title"
-                                disabled={isLoading}
-                            />
-                            {errors.title && <span className="error-message">{errors.title}</span>}
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="description" className="form-label">Description</label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                className={`form-textarea ${errors.description ? 'error' : ''}`}
-                                placeholder="Describe your musical vision, style, or what you're looking to create..."
-                                rows={6}
-                                disabled={isLoading}
-                            />
-                            {errors.description && <span className="error-message">{errors.description}</span>}
-                        </div>
-
-                        {/* Album Artwork Upload */}
+                {/* Album Artwork and Basic Info - Top Section */}
+                <div className="artwork-section">
+                    {/* Left: Album Artwork */}
+                    <div className="artwork-container">
                         <div className="form-group">
                             <label className="form-label">Album Artwork (Optional)</label>
 
@@ -372,9 +447,8 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                                         disabled={isLoading}
                                     />
                                     <label htmlFor="artwork" className="artwork-upload-label">
-                                        <div className="upload-icon">📷</div>
                                         <div className="upload-text">
-                                            <strong>Click to upload artwork</strong>
+                                            <strong>Upload Album Artwork here</strong>
                                             <small>JPEG, PNG, GIF, WebP • Max 10MB</small>
                                         </div>
                                     </label>
@@ -397,6 +471,67 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                             )}
 
                             {errors.artwork && <span className="error-message">{errors.artwork}</span>}
+                        </div>
+                    </div>
+
+                    {/* Right: Title and Artist Name */}
+                    <div className="basic-info-container">
+                        <div className="form-group">
+                            <label htmlFor="title" className="form-label">DONUT Title</label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleInputChange}
+                                className={`form-input ${errors.title ? 'error' : ''}`}
+                                placeholder="Enter your project title"
+                                disabled={isLoading}
+                            />
+                            {errors.title && <span className="error-message">{errors.title}</span>}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="artistName" className="form-label">Artist Name</label>
+                            <input
+                                type="text"
+                                id="artistName"
+                                name="artistName"
+                                value={formData.artistName || ''}
+                                onChange={handleInputChange}
+                                className={`form-input ${errors.artistName ? 'error' : ''}`}
+                                placeholder="Enter artist name"
+                                disabled={isLoading}
+                            />
+                            {errors.artistName && <span className="error-message">{errors.artistName}</span>}
+                        </div>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="create-form">
+                    {errors.general && (
+                        <div className="error-message general-error">
+                            {errors.general}
+                        </div>
+                    )}
+
+                    {/* Left Section - Project Details */}
+                    <div className="form-section">
+                        <h3 className="section-title">Project Details</h3>
+
+                        <div className="form-group">
+                            <label htmlFor="description" className="form-label">Description</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                className={`form-textarea ${errors.description ? 'error' : ''}`}
+                                placeholder="Describe your musical vision, style, or what you're looking to create..."
+                                rows={6}
+                                disabled={isLoading}
+                            />
+                            {errors.description && <span className="error-message">{errors.description}</span>}
                         </div>
 
                         <div className="form-group">
@@ -423,39 +558,17 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                                 className="theme-cycle-btn"
                                 onClick={cycleToNextTheme}
                                 disabled={isLoading}
-                                title="Click to cycle through color themes"
+                                title={`Current: ${formData.theme.palette} • Click to cycle themes`}
+                                style={{
+                                    background: getThemePreview(formData.theme.mode, formData.theme.palette).primary,
+                                    borderColor: getThemePreview(formData.theme.mode, formData.theme.palette).accent
+                                }}
                             >
                             </button>
+                            <small className="theme-indicator">{formData.theme.palette} Theme</small>
                         </div>
 
-                        {/* Synesthesia Support Fields */}
-                        <div className="form-group">
-                            <label htmlFor="emotionalTone" className="form-label">Emotional Tone (Optional)</label>
-                            <input
-                                type="text"
-                                id="emotionalTone"
-                                value={formData.theme.emotionalTone}
-                                onChange={(e) => handleThemeChange('emotionalTone', e.target.value)}
-                                className="form-input"
-                                placeholder="e.g., Energetic, Melancholic, Dreamy..."
-                                disabled={isLoading}
-                            />
-                            <small className="form-hint">How does this project feel to you?</small>
-                        </div>
 
-                        <div className="form-group">
-                            <label htmlFor="visualDescription" className="form-label">Visual Description (Optional)</label>
-                            <textarea
-                                id="visualDescription"
-                                value={formData.theme.visualDescription}
-                                onChange={(e) => handleThemeChange('visualDescription', e.target.value)}
-                                className="form-textarea"
-                                placeholder="Describe the colors, shapes, or visuals you see when you hear this music..."
-                                rows={3}
-                                disabled={isLoading}
-                            />
-                            <small className="form-hint">For artists with synesthesia - paint the sounds with words</small>
-                        </div>
                     </div>
 
                     {/* Right Section - Collaborators */}

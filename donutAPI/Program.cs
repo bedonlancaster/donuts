@@ -80,6 +80,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Serve static files (for uploaded artwork)
+app.UseStaticFiles();
+
 // Use CORS
 app.UseCors("AllowReactApp");
 

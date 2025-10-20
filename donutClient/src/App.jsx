@@ -6,6 +6,7 @@ import AuthForm from './components/AuthForm/AuthForm'
 import RegisterForm from './components/RegisterForm/RegisterForm'
 import Dashboard from './components/Dashboard/Dashboard'
 import CreateNewDonut from './components/CreateNewDonut/CreateNewDonut'
+import ProjectDetail from './components/ProjectDetail/ProjectDetail'
 import './App.css'
 
 function AppContent() {
@@ -103,6 +104,14 @@ function AppContent() {
               onBack={() => navigate('/dashboard')}
               onSuccess={handleCreateDonutSuccess}
             />
+          ) : (
+            <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
+          )
+        } />
+
+        <Route path="/project/:id" element={
+          user ? (
+            <ProjectDetail user={user} onLogout={handleLogout} />
           ) : (
             <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
           )
