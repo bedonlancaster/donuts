@@ -111,6 +111,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => "🍩 DONUTS API is running!");
+app.MapGet("/", () => "DONUTS API is running!");
 
 app.Run();
