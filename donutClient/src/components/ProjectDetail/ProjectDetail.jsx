@@ -40,10 +40,10 @@ const PALETTE_ORDER = ['Coral', 'Peach', 'Sage', 'Clay', 'Slate']
 function ProjectDetail({ user, onLogout }) {
     const { id: projectId } = useParams()
     const navigate = useNavigate()
-    const { currentTheme, setProjectTheme: setContextTheme } = useTheme()
+    const { currentTheme } = useTheme()
     const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer()
     const [project, setProject] = useState(null)
-    const [projectTheme, setProjectTheme] = useState(null) // Start with null to avoid initial flash
+    // Theme is now set by ThemeLoader; no local theme state needed
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('tracks')
@@ -57,42 +57,9 @@ function ProjectDetail({ user, onLogout }) {
     console.log('User prop:', user)
     console.log('Current theme:', currentTheme)
 
-    // Apply project theme when project loads
-    useEffect(() => {
-        if (project && project.theme) {
-            console.log('Project theme found:', project.theme)
+    // Theme is set by ThemeLoader; no need to set theme here
 
-            // Convert database enum values back to strings
-            const modeString = project.theme.mode === 1 ? 'Light' : 'Dark'
-            const paletteString = getPaletteStringFromEnum(project.theme.palette)
-
-            console.log('Setting project theme:', { mode: modeString, palette: paletteString })
-            setProjectTheme({
-                mode: modeString,
-                palette: paletteString
-            })
-        } else {
-            console.log('No project theme found, using default')
-            setProjectTheme({ mode: 'Light', palette: 'Coral' })
-        }
-    }, [project])
-
-    // Apply theme to DOM whenever projectTheme changes (only if theme is loaded)
-    useEffect(() => {
-        if (projectTheme) { // Only apply theme if we have one loaded
-            console.log('🎨 Applying project theme to DOM:', projectTheme)
-            setContextTheme({
-                mode: projectTheme.mode,
-                palette: projectTheme.palette
-            })
-        }
-    }, [projectTheme, setContextTheme])
-
-    // Helper function to convert palette enum back to string
-    const getPaletteStringFromEnum = (enumValue) => {
-        const paletteMap = { 1: 'Coral', 2: 'Peach', 3: 'Sage', 4: 'Clay', 5: 'Slate' }
-        return paletteMap[enumValue] || 'Coral'
-    }
+    // Palette mapping is now centralized in themeUtils
 
     // Theme management functions
     const cycleProjectTheme = () => {
@@ -381,8 +348,8 @@ function ProjectDetail({ user, onLogout }) {
     }
 
     // Get current project theme colors (with fallback)
-    const activeTheme = projectTheme
-        ? getThemePreview(projectTheme.mode, projectTheme.palette)
+    const activeTheme = currentTheme
+        ? getThemePreview(currentTheme.mode, currentTheme.palette)
         : getThemePreview('Light', 'Coral') // Fallback while loading
 
     return (
@@ -602,34 +569,7 @@ function ProjectDetail({ user, onLogout }) {
                             <div className="setting-group">
                                 <h4>Project Theme</h4>
 
-                                {/* Light/Dark Mode Switch */}
-                                <div className="theme-mode-switch">
-                                    <span className="mode-label">Light</span>
-                                    <label className="switch">
-                                        <input
-                                            type="checkbox"
-                                            checked={projectTheme?.mode === 'Dark'}
-                                            onChange={(e) => handleProjectThemeMode(e.target.checked)}
-                                            disabled={!projectTheme} // Disable while loading
-                                        />
-                                        <span className="slider"></span>
-                                    </label>
-                                    <span className="mode-label">Dark</span>
-                                </div>
 
-                                {/* Theme Cycle Button */}
-                                <button
-                                    type="button"
-                                    className="theme-cycle-btn"
-                                    onClick={cycleProjectTheme}
-                                    disabled={!projectTheme} // Disable while loading
-                                    style={{
-                                        backgroundColor: activeTheme.primary,
-                                        border: `2px solid ${activeTheme.accent}`,
-                                        marginTop: '1rem'
-                                    }}
-                                    title="Click to cycle through color themes"
-                                />
 
                                 {/* Theme Preview */}
                                 <div className="theme-preview-box" style={{
@@ -641,7 +581,7 @@ function ProjectDetail({ user, onLogout }) {
                                     marginTop: '1rem'
                                 }}>
                                     <strong style={{ color: activeTheme.primary }}>
-                                        {projectTheme ? `${projectTheme.palette} - ${projectTheme.mode} Mode` : 'Loading theme...'}
+                                        {currentTheme ? `${currentTheme.palette} - ${currentTheme.mode} Mode` : 'Loading theme...'}
                                     </strong>
                                     <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
                                         This is how your project theme will look with text and backgrounds.
@@ -649,17 +589,7 @@ function ProjectDetail({ user, onLogout }) {
                                 </div>
 
                                 {/* Save Theme Button */}
-                                <button
-                                    className="save-theme-btn"
-                                    onClick={() => handleUpdateProjectTheme(projectTheme)}
-                                    style={{
-                                        backgroundColor: activeTheme.primary,
-                                        color: activeTheme.background,
-                                        marginTop: '1rem'
-                                    }}
-                                >
-                                    Save Theme to Project
-                                </button>
+
                             </div>
 
                             <div className="setting-group">
