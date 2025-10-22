@@ -51,6 +51,26 @@ const COLOR_PALETTES = {
 }
 
 function TrackDetail({ user, onLogout }) {
+    // Delete track handler
+    const handleDeleteTrack = async () => {
+        if (!trackId) return;
+        if (!window.confirm('Are you sure you want to delete this track? This action cannot be undone.')) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                navigate(`/project/${projectId}`);
+            } else {
+                alert('Failed to delete track.');
+            }
+        } catch (error) {
+            console.error('Error deleting track:', error);
+            alert('Error deleting track.');
+        }
+    };
     const { projectId, trackId } = useParams()
     const navigate = useNavigate()
     const { currentTheme } = useTheme()
@@ -350,6 +370,15 @@ function TrackDetail({ user, onLogout }) {
                         </div>
 
                         {/* Removed embedded audio player. Use global PlaybackBar only. */}
+                        <div style={{ marginTop: '2rem' }}>
+                            <button
+                                className="delete-btn track-delete-btn"
+                                style={{ background: 'var(--theme-primary)', color: 'white', padding: '0.6rem 1.2rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                                onClick={handleDeleteTrack}
+                            >
+                                Delete Track
+                            </button>
+                        </div>
                     </div>
                 )}
 

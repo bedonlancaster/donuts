@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './Dashboard.css'
 
 function Dashboard({ user, onLogout }) {
+    const { resetToDefaultTheme } = useTheme();
     const navigate = useNavigate()
     const [selectedSection, setSelectedSection] = useState('donuts')
     const [projects, setProjects] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
-    // Fetch user's projects from the API
+    // Fetch user's projects from the API and reset theme on mount
     useEffect(() => {
+        resetToDefaultTheme();
         const fetchProjects = async () => {
             try {
                 const response = await fetch('http://localhost:5000/api/projects', {
@@ -21,7 +24,6 @@ function Dashboard({ user, onLogout }) {
                         'Content-Type': 'application/json'
                     }
                 })
-
                 if (response.ok) {
                     const projectsData = await response.json()
                     setProjects(projectsData)
@@ -35,9 +37,8 @@ function Dashboard({ user, onLogout }) {
                 setLoading(false)
             }
         }
-
         fetchProjects()
-    }, [])
+    }, [resetToDefaultTheme])
 
     const handleLogout = async () => {
         try {
