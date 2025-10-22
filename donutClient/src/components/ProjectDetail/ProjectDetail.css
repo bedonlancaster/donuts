@@ -2,85 +2,85 @@
 
 .project-detail {
     min-height: 100vh;
-    background: var(--light-pink);
+    background: var(--theme-secondary);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 /* Header section uses theme colors - adapts to light/dark mode */
 .project-header {
-    color: var(--text-dark);
+    color: var(--theme-text);
     /* Theme text color */
 }
 
 .project-title {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     /* Theme's primary color */
 }
 
 .project-artist,
 .project-description {
-    color: var(--text-dark);
+    color: var(--theme-text);
     /* Theme text color */
 }
 
 .project-status {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: var(--background);
     /* Contrasting background color */
 }
 
 .profile-name,
 .profile-role {
-    color: var(--text-dark);
+    color: var(--theme-text);
     /* Theme text color */
 }
 
 .back-btn {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     /* Theme's primary color */
-    border-color: var(--primary-coral);
+    border-color: var(--theme-primary);
 }
 
 .back-btn:hover {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: var(--background);
     /* Contrasting background color */
-    border-color: var(--primary-coral);
+    border-color: var(--theme-primary);
 }
 
 .logout-btn {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     /* Theme's primary color */
-    border-color: var(--primary-coral);
+    border-color: var(--theme-primary);
 }
 
 .logout-btn:hover {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: var(--background);
     /* Contrasting background color */
 }
 
 /* Tab section uses theme colors */
 .tab-btn {
-    color: var(--text-dark);
+    color: var(--theme-text);
     /* Theme text color */
     opacity: 0.7;
 }
 
 .tab-btn.active,
 .tab-btn:hover {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     /* Theme's primary color */
     opacity: 1;
-    border-bottom-color: var(--primary-coral);
+    border-bottom-color: var(--theme-primary);
 }
 
 /* Content in boxes use theme colors for adaptive backgrounds */
 .setting-group,
 .track-item,
 .collaborator-item {
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .setting-group h4,
@@ -108,7 +108,7 @@
 }
 
 .loading-message {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     font-size: 1.2rem;
 }
 
@@ -122,7 +122,7 @@
 .project-header {
     background: var(--background);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--primary-coral);
+    border-bottom: 1px solid var(--theme-primary);
     padding: 2rem 3rem;
     display: flex;
     align-items: center;
@@ -131,9 +131,9 @@
 }
 
 .back-btn {
-    background: none;
-    border: 1px solid var(--primary-coral);
-    color: var(--primary-coral);
+    background: var(--theme-secondary);
+    border: 1px solid var(--theme-primary);
+    color: var(--theme-primary);
     font-size: 1rem;
     cursor: pointer;
     padding: 0.5rem 1rem;
@@ -143,9 +143,9 @@
 }
 
 .back-btn:hover {
-    background: var(--primary-coral);
-    color: var(--text-dark);
-    border-color: var(--primary-coral);
+    background: var(--theme-primary);
+    color: var(--theme-text);
+    border-color: var(--theme-primary);
 }
 
 .project-info {
@@ -165,25 +165,25 @@
     height: 80px;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid var(--primary-coral);
+    border: 1px solid var(--theme-primary);
 }
 
 .project-details h1 {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     margin: 0 0 0.25rem 0;
     font-size: 1.8rem;
     font-weight: 700;
 }
 
 .project-artist {
-    color: var(--text-dark);
+    color: var(--theme-text);
     margin: 0 0 0.5rem 0;
     font-size: 1rem;
     font-style: italic;
 }
 
 .project-description {
-    color: var(--text-dark);
+    color: var(--theme-text);
     margin: 0 0 0.5rem 0;
     font-size: 0.9rem;
     line-height: 1.4;
@@ -191,7 +191,7 @@
 }
 
 .project-status {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
@@ -231,7 +231,7 @@
 .profile-avatar {
     width: 40px;
     height: 40px;
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -248,7 +248,7 @@
 
 .profile-name {
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-size: 0.9rem;
 }
 
@@ -259,8 +259,8 @@
 
 .logout-btn {
     background: none;
-    border: 1px solid var(--primary-coral);
-    color: var(--primary-coral);
+    border: 1px solid var(--theme-primary);
+    color: var(--theme-primary);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -269,7 +269,7 @@
 }
 
 .logout-btn:hover {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
 }
 
@@ -277,7 +277,7 @@
 .project-tabs {
     background: var(--background);
     backdrop-filter: blur(5px);
-    border-bottom: 1px solid var(--primary-coral);
+    border-bottom: 1px solid var(--theme-primary);
     display: flex;
     padding: 0 3rem;
     transition: all 0.3s ease;
@@ -305,6 +305,7 @@
     color: var(--theme-primary) !important;
     opacity: 1;
     border-bottom-color: var(--theme-primary) !important;
+    background: var(--theme-background);
 }
 
 /* Tab Content */
@@ -321,14 +322,14 @@
 }
 
 .section-header h2 {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     margin: 0;
     font-size: 1.5rem;
     font-weight: 700;
 }
 
 .add-btn {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -354,26 +355,26 @@
 .track-item {
     background: var(--background);
     backdrop-filter: blur(5px);
-    border: 1px solid var(--primary-coral);
+    border: 1px solid var(--theme-primary);
     border-radius: 12px;
     padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     transition: all 0.2s ease;
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .track-item:hover {
     background: var(--background);
-    border-color: var(--primary-coral);
+    border-color: var(--theme-primary);
     opacity: 0.9;
 }
 
 .track-number {
     background: transparent;
-    color: var(--primary-coral);
-    border: 2px solid var(--primary-coral);
+    color: var(--theme-primary);
+    border: 2px solid var(--theme-primary);
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -390,9 +391,19 @@
 
 .track-info h4 {
     margin: 0 0 0.25rem 0;
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-size: 1rem;
     font-weight: 600;
+}
+
+.track-title-link {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.track-title-link:hover {
+    color: var(--theme-primary);
+    text-decoration: underline;
 }
 
 .track-info p {
@@ -402,7 +413,7 @@
 }
 
 .track-duration {
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-size: 0.9rem;
     font-weight: 500;
     font-family: 'SF Mono', 'Monaco', monospace;
@@ -416,8 +427,8 @@
 .play-btn,
 .more-btn {
     background: none;
-    border: 1px solid var(--primary-coral);
-    color: var(--primary-coral);
+    border: 1px solid var(--theme-primary);
+    color: var(--theme-primary);
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -430,7 +441,7 @@
 
 .play-btn:hover,
 .more-btn:hover {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
 }
 
@@ -444,19 +455,19 @@
 .collaborator-item {
     background: var(--background);
     backdrop-filter: blur(5px);
-    border: 1px solid var(--primary-coral);
+    border: 1px solid var(--theme-primary);
     border-radius: 12px;
     padding: 1.25rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .collaborator-avatar {
     width: 48px;
     height: 48px;
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -472,7 +483,7 @@
 
 .collaborator-info h4 {
     margin: 0 0 0.25rem 0;
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-size: 1rem;
     font-weight: 600;
 }
@@ -484,8 +495,8 @@
 }
 
 .collaborator-status {
-    background: var(--light-pink);
-    color: var(--primary-coral);
+    background: var(--theme-secondary);
+    color: var(--theme-primary);
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -502,14 +513,14 @@
 .setting-group {
     background: var(--background);
     backdrop-filter: blur(5px);
-    border: 1px solid var(--primary-coral);
+    border: 1px solid var(--theme-primary);
     border-radius: 12px;
     padding: 1.5rem;
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .setting-group h4 {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     /* Theme's primary color */
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
@@ -518,12 +529,12 @@
 
 .setting-group p {
     margin: 0.5rem 0;
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-size: 0.9rem;
 }
 
 .setting-group strong {
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .theme-preview {
@@ -532,7 +543,7 @@
 }
 
 .theme-cycle-btn-settings {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -571,7 +582,7 @@
 }
 
 .mode-label {
-    color: var(--text-dark);
+    color: var(--theme-text);
     font-weight: 500;
     font-size: 0.9rem;
 }
@@ -596,10 +607,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--light-pink);
+    background: var(--theme-secondary);
     transition: 0.3s;
     border-radius: 30px;
-    border: 2px solid var(--primary-coral);
+    border: 2px solid var(--theme-primary);
 }
 
 .slider:before {
@@ -609,13 +620,13 @@
     width: 20px;
     left: 3px;
     bottom: 3px;
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     transition: 0.3s;
     border-radius: 50%;
 }
 
 input:checked+.slider {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
 }
 
 input:checked+.slider:before {
@@ -631,7 +642,7 @@ input:checked+.slider:before {
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     display: block;
     margin: 0 auto;
 }
@@ -642,7 +653,7 @@ input:checked+.slider:before {
 
 /* Save Theme Button */
 .save-theme-btn {
-    background: var(--primary-coral);
+    background: var(--theme-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -688,11 +699,11 @@ input:checked+.slider:before {
     justify-content: center;
     text-align: center;
     padding: 3rem;
-    color: var(--text-dark);
+    color: var(--theme-text);
 }
 
 .empty-state h3 {
-    color: var(--primary-coral);
+    color: var(--theme-primary);
     margin-bottom: 0.5rem;
     font-size: 1.3rem;
     font-weight: 600;

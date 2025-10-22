@@ -1,0 +1,462 @@
+/* TrackDetail.css - Based on ProjectDetail.css with track-specific modifications */
+
+.track-detail {
+    min-height: 100vh;
+    background: var(--theme-background);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: var(--theme-text);
+}
+
+/* Back button */
+.back-btn {
+    background: none;
+    border: 1px solid var(--theme-primary);
+    color: var(--theme-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    transform: translateY(-1px);
+}
+
+/* Project Header - Same as ProjectDetail */
+.project-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--theme-accent);
+    padding: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.project-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-left: 1rem;
+}
+
+.project-artwork {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--theme-accent);
+}
+
+.project-artwork .artwork-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.project-details {
+    flex: 1;
+}
+
+.project-details h1 {
+    color: var(--theme-primary);
+    margin: 0 0 0.25rem 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.project-artist {
+    color: var(--theme-text);
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.project-description {
+    color: var(--theme-text);
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-width: 400px;
+}
+
+.project-status {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: fit-content;
+    margin-bottom: 1rem;
+}
+
+/* Header Actions - Same as ProjectDetail */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile-name {
+    font-weight: 600;
+    color: var(--theme-text);
+    font-size: 0.95rem;
+}
+
+.profile-role {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #e74c3c;
+    color: var(--theme-background);
+}
+
+/* Tabs - Same as ProjectDetail */
+.project-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid var(--theme-primary);
+    padding: 0 2rem;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    background: var(--theme-secondary);
+    border: none;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #7f8c8d;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    color: var(--theme-primary);
+    background: var(--theme-secondary);
+}
+
+.tab-btn.active {
+    color: var(--theme-primary);
+    border-bottom-color: var(--theme-primary);
+    background: var(--theme-background);
+}
+
+.tab-badge {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Tab Content - Same as ProjectDetail */
+.tab-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Section Headers - Same as ProjectDetail */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.section-header h2 {
+    color: var(--theme-primary);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.section-header p {
+    color: #7f8c8d;
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Track Header Info - moved from top section */
+.track-header-info {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--theme-primary);
+    margin-bottom: 2rem;
+    transition: all 0.2s ease;
+}
+
+.track-header-info:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--theme-primary);
+    transform: translateY(-2px);
+}
+
+.track-header-info .track-title {
+    color: var(--theme-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.track-indicator {
+    font-size: 1.2rem;
+}
+
+.track-header-info .track-meta {
+    color: #7f8c8d;
+    margin: 0 0 1.5rem 0;
+    font-size: 1rem;
+}
+
+.track-play-btn {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.track-play-btn:hover {
+    background: var(--theme-primary);
+    transform: translateY(-1px);
+}
+
+/* Track Details Grid */
+.track-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--theme-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.detail-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--theme-primary);
+    transform: translateY(-2px);
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: var(--theme-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: var(--theme-text);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+/* Audio Player Section */
+.audio-player-section {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--theme-primary);
+    transition: all 0.2s ease;
+}
+
+.audio-player-section:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--theme-primary);
+}
+
+.audio-player-section h3 {
+    color: var(--theme-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.audio-player-section audio {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+}
+
+/* Hit List Section - Same as ProjectDetail */
+.hitlist-section {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--theme-primary);
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    gap: 1rem;
+}
+
+.error-state h2 {
+    color: #e74c3c;
+    margin: 0;
+}
+
+.error-state p {
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.error-state button {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.error-state button:hover {
+    background: var(--theme-primary);
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .project-header {
+        padding: 1rem;
+    }
+
+    .project-info {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+        text-align: center;
+        margin-left: 0;
+    }
+
+    .project-artwork {
+        width: 100px;
+        height: 100px;
+    }
+
+    .project-details h1 {
+        font-size: 1.5rem;
+    }
+
+    .current-track-info .track-title {
+        font-size: 1.2rem;
+    }
+
+    .project-tabs {
+        padding: 0 1rem;
+        overflow-x: auto;
+    }
+
+    .tab-content {
+        padding: 1rem;
+    }
+
+    .track-details-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .detail-item {
+        padding: 1rem;
+    }
+
+    .header-actions {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+}

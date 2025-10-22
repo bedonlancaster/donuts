@@ -495,7 +495,13 @@ function ProjectDetail({ user, onLogout }) {
                                     >
                                         <div className="track-number">{index + 1}</div>
                                         <div className="track-info">
-                                            <h4>{track.title}</h4>
+                                            <h4
+                                                className="track-title-link"
+                                                onClick={() => navigate(`/project/${projectId}/track/${track.id}`)}
+                                                title="View track details"
+                                            >
+                                                {track.title}
+                                            </h4>
                                             <p>Uploaded by {track.uploadedBy.displayName}</p>
                                         </div>
                                         <div className="track-duration">

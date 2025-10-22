@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import './HitList.css'
 
-function HitList({ projectId }) {
+function HitList({ projectId, trackId }) {
     const [items, setItems] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [focusKey, setFocusKey] = useState(null) // To trigger focus on specific input
+
+    // Determine the API endpoint based on props
+    const isTrackLevel = trackId !== undefined
+    const apiEndpoint = isTrackLevel
+        ? `http://localhost:5000/api/hitlistitems/track/${trackId}`
+        : `http://localhost:5000/api/hitlistitems/project/${projectId}`
 
     // Load hit list items from backend
     useEffect(() => {
         const fetchHitListItems = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/hitlistitems/project/${projectId}`, {
+                const response = await fetch(apiEndpoint, {
                     credentials: 'include'
                 })
 
@@ -36,10 +42,10 @@ function HitList({ projectId }) {
             }
         }
 
-        if (projectId) {
+        if (projectId || trackId) {
             fetchHitListItems()
         }
-    }, [projectId])
+    }, [apiEndpoint, projectId, trackId])
 
     const addNewItem = () => {
         const newItem = {
@@ -136,6 +142,7 @@ function HitList({ projectId }) {
                         title: item.subject,
                         description: bulletPointsText,
                         projectId: parseInt(projectId),
+                        trackId: trackId ? parseInt(trackId) : null,
                         priority: 2 // Medium priority
                     })
                 })
@@ -209,7 +216,7 @@ function HitList({ projectId }) {
     return (
         <div className="hit-list">
             <div className="hit-list-header">
-                <h3>Hit List</h3>
+                <h3>{isTrackLevel ? 'Track Hit List' : 'Hit List'}</h3>
                 <button className="add-item-btn" onClick={addNewItem}>
                     + Add Item
                 </button>
@@ -319,7 +326,7 @@ function HitList({ projectId }) {
 
             {items.length === 0 && (
                 <div className="empty-state">
-                    <p>No items in your hit list yet.</p>
+                    <p>No items in your {isTrackLevel ? 'track' : 'project'} hit list yet.</p>
                     <p>Click "Add Item" to create your first discussion point!</p>
                 </div>
             )}

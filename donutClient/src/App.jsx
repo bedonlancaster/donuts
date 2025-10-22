@@ -8,6 +8,7 @@ import RegisterForm from './components/RegisterForm/RegisterForm'
 import Dashboard from './components/Dashboard/Dashboard'
 import CreateNewDonut from './components/CreateNewDonut/CreateNewDonut'
 import ProjectDetail from './components/ProjectDetail/ProjectDetail'
+import TrackDetail from './components/TrackDetail/TrackDetail'
 import UploadTrack from './components/UploadTrack/UploadTrack'
 import PlaybackBar from './components/PlaybackBar/PlaybackBar'
 import './App.css'
@@ -130,6 +131,14 @@ function AppContent() {
               onBack={() => navigate(-1)}
               onSuccess={(projectId) => navigate(`/project/${projectId}`)}
             />
+          ) : (
+            <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
+          )
+        } />
+
+        <Route path="/project/:projectId/track/:trackId" element={
+          user ? (
+            <TrackDetail user={user} onLogout={handleLogout} />
           ) : (
             <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
           )
