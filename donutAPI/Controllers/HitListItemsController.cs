@@ -35,7 +35,7 @@ namespace DonutAPI.Controllers
             var hitListItems = await _context.HitListItems
                 .Include(h => h.CreatedBy)
                 .Include(h => h.Track)
-                .Where(h => h.ProjectId == projectId)
+                .Where(h => h.ProjectId == projectId && h.TrackId == null)
                 .OrderBy(h => h.Priority)
                 .ThenBy(h => h.DueDate)
                 .Select(h => new HitListItemDto

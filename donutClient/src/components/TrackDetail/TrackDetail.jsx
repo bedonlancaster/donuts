@@ -53,12 +53,12 @@ const COLOR_PALETTES = {
 function TrackDetail({ user, onLogout }) {
     const { projectId, trackId } = useParams()
     const navigate = useNavigate()
-    const { currentTheme, setProjectTheme } = useTheme()
+    const { currentTheme } = useTheme()
     const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer()
 
     const [track, setTrack] = useState(null)
     const [project, setProject] = useState(null) // We need project info for theme and display
-    const [localProjectTheme, setLocalProjectTheme] = useState(null) // Start with null to avoid initial flash
+    // Theme is now set by ThemeLoader; no local theme state needed
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('details')
@@ -69,53 +69,9 @@ function TrackDetail({ user, onLogout }) {
     console.log('Track ID from URL:', trackId)
     console.log('Current theme:', currentTheme)
 
-    // Apply project theme when project loads (same logic as ProjectDetail)
-    useEffect(() => {
-        if (project && project.theme) {
-            console.log('Project theme found:', project.theme)
+    // Theme is set by ThemeLoader; no need to set theme here
 
-            // Convert database enum values back to strings
-            const modeString = project.theme.mode === 1 ? 'Light' : 'Dark'
-            const paletteString = getPaletteStringFromEnum(project.theme.palette)
-
-            console.log('Setting local project theme:', { mode: modeString, palette: paletteString })
-            setLocalProjectTheme({
-                mode: modeString,
-                palette: paletteString
-            })
-        } else {
-            console.log('No project theme found, using default')
-            setLocalProjectTheme({ mode: 'Light', palette: 'Coral' })
-        }
-    }, [project])
-
-    // Apply theme to DOM whenever projectTheme changes (same logic as ProjectDetail)
-    useEffect(() => {
-        if (localProjectTheme) { // Only apply theme if we have one loaded
-            console.log('🎨 Applying project theme to DOM:', localProjectTheme)
-            setProjectTheme({
-                mode: localProjectTheme.mode,
-                palette: localProjectTheme.palette
-            })
-        }
-    }, [localProjectTheme, setProjectTheme])
-
-    // Helper function to convert palette enum back to string (must match ProjectDetail exactly)
-    const getPaletteStringFromEnum = (enumValue) => {
-        const paletteMap = {
-            1: 'Coral',
-            2: 'Peach',
-            3: 'Sage',
-            4: 'Clay',
-            5: 'Slate',
-            6: 'Salmon',
-            7: 'Moss',
-            8: 'Dusk',
-            9: 'Stone',
-            10: 'Mist'
-        }
-        return paletteMap[enumValue] || 'Coral'
-    }
+    // Palette mapping is now centralized in themeUtils
 
     // Fetch track details (which includes project info)
     useEffect(() => {
@@ -245,7 +201,7 @@ function TrackDetail({ user, onLogout }) {
                     <h2>Error</h2>
                     <p>{error}</p>
                     <button onClick={() => navigate(`/project/${projectId}`)}>
-                        Back to Project
+
                     </button>
                 </div>
             </div>
@@ -258,7 +214,7 @@ function TrackDetail({ user, onLogout }) {
                 <div className="error-state">
                     <h2>Track not found</h2>
                     <button onClick={() => navigate(`/project/${projectId}`)}>
-                        Back to Project
+
                     </button>
                 </div>
             </div>
@@ -273,7 +229,7 @@ function TrackDetail({ user, onLogout }) {
                     className="back-btn"
                     onClick={() => navigate(`/project/${projectId}`)}
                 >
-                    ← Back to Project
+                    ←
                 </button>
 
                 <div className="project-info">
@@ -344,9 +300,14 @@ function TrackDetail({ user, onLogout }) {
                         {/* Track Header Info */}
                         <div className="track-header-info">
                             <h2 className="track-title">
-                                <span className="track-indicator">🎵</span>
+                                <span className="track-indicator"></span>
                                 {track.title}
                             </h2>
+                            {(project?.ArtistName || project?.artistName) && (
+                                <div className="track-artist" style={{ fontSize: '1.1rem', color: 'var(--theme-text)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                                    By {project.ArtistName || project.artistName}
+                                </div>
+                            )}
                             <p className="track-meta">
                                 Track #{track.orderIndex} • Uploaded by {track.uploadedBy?.displayName}
                                 {track.duration && ` • ${formatDuration(track.duration)}`}
@@ -357,7 +318,7 @@ function TrackDetail({ user, onLogout }) {
                                 title={currentTrack && currentTrack.id === track.id && isPlaying ? 'Pause' : 'Play'}
                             >
                                 {currentTrack && currentTrack.id === track.id && isPlaying ? '⏸' : '▶'}
-                                <span>{currentTrack && currentTrack.id === track.id && isPlaying ? 'Pause' : 'Play'}</span>
+
                             </button>
                         </div>
 
@@ -388,14 +349,7 @@ function TrackDetail({ user, onLogout }) {
                             </div>
                         </div>
 
-                        {track.fileUrl && (
-                            <div className="audio-player-section">
-                                <h3>Audio Player</h3>
-                                <audio controls src={`http://localhost:5000${track.fileUrl}`}>
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        )}
+                        {/* Removed embedded audio player. Use global PlaybackBar only. */}
                     </div>
                 )}
 

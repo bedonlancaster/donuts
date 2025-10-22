@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard/Dashboard'
 import CreateNewDonut from './components/CreateNewDonut/CreateNewDonut'
 import ProjectDetail from './components/ProjectDetail/ProjectDetail'
 import TrackDetail from './components/TrackDetail/TrackDetail'
+import ThemeLoader from './components/ThemeLoader'
 import UploadTrack from './components/UploadTrack/UploadTrack'
 import PlaybackBar from './components/PlaybackBar/PlaybackBar'
 import './App.css'
@@ -117,7 +118,9 @@ function AppContent() {
 
         <Route path="/project/:id" element={
           user ? (
-            <ProjectDetail user={user} onLogout={handleLogout} />
+            <ThemeLoader>
+              <ProjectDetail user={user} onLogout={handleLogout} />
+            </ThemeLoader>
           ) : (
             <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
           )
@@ -138,7 +141,9 @@ function AppContent() {
 
         <Route path="/project/:projectId/track/:trackId" element={
           user ? (
-            <TrackDetail user={user} onLogout={handleLogout} />
+            <ThemeLoader>
+              <TrackDetail user={user} onLogout={handleLogout} />
+            </ThemeLoader>
           ) : (
             <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
           )
