@@ -587,9 +587,9 @@ namespace DonutAPI.Controllers
             if (!allowedTypes.Contains(artworkFile.ContentType.ToLower()))
                 return BadRequest("Invalid file type. Only JPEG, PNG, GIF, and WebP files are allowed.");
 
-            // Validate file size (max 10MB)
-            if (artworkFile.Length > 10 * 1024 * 1024)
-                return BadRequest("File size must be less than 10MB");
+            // Validate file size (max 50MB)
+            if (artworkFile.Length > 50 * 1024 * 1024)
+                return BadRequest("File size must be less than 50MB");
 
             try
             {

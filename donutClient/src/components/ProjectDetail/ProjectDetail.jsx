@@ -40,10 +40,11 @@ const PALETTE_ORDER = ['Coral', 'Peach', 'Sage', 'Clay', 'Slate']
 function ProjectDetail({ user, onLogout }) {
     const { id: projectId } = useParams()
     const navigate = useNavigate()
-    const { currentTheme } = useTheme()
+    const { currentTheme, setPreviewTheme, resetToDefaultTheme } = useTheme()
     const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer()
     const [project, setProject] = useState(null)
-    // Theme is now set by ThemeLoader; no local theme state needed
+    // Local theme preview state for cycling and mode switching
+    const [themePreview, setThemePreview] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('tracks')
@@ -61,23 +62,37 @@ function ProjectDetail({ user, onLogout }) {
 
     // Palette mapping is now centralized in themeUtils
 
-    // Theme management functions
+    // Theme management functions (local preview)
     const cycleProjectTheme = () => {
-        if (!projectTheme) return // Don't cycle if theme not loaded yet
-
-        const currentIndex = PALETTE_ORDER.indexOf(projectTheme.palette)
+        if (!themePreview) return
+        const currentIndex = PALETTE_ORDER.indexOf(themePreview.palette)
         const nextIndex = (currentIndex + 1) % PALETTE_ORDER.length
         const nextPalette = PALETTE_ORDER[nextIndex]
-
-        setProjectTheme(prev => ({ ...prev, palette: nextPalette }))
+        setThemePreview(prev => ({ ...prev, palette: nextPalette }))
     }
 
     const handleProjectThemeMode = (isChecked) => {
-        if (!projectTheme) return // Don't change if theme not loaded yet
-
+        if (!themePreview) return
         const newMode = isChecked ? 'Dark' : 'Light'
-        setProjectTheme(prev => ({ ...prev, mode: newMode }))
+        setThemePreview(prev => ({ ...prev, mode: newMode }))
     }
+    // Sync themePreview with project data when loaded
+    useEffect(() => {
+        if (project && project.theme) {
+            setThemePreview({
+                mode: project.theme.mode === 2 ? 'Dark' : 'Light',
+                palette: PALETTE_ORDER[project.theme.palette - 1] || 'Coral'
+            })
+        }
+    }, [project])
+
+    // Update preview theme in context for live preview
+    useEffect(() => {
+        if (themePreview) {
+            setPreviewTheme(themePreview)
+        }
+        // No reset here; only reset when leaving ProjectDetail page
+    }, [themePreview, setPreviewTheme])
 
     // Fetch project details
     useEffect(() => {
@@ -312,6 +327,7 @@ function ProjectDetail({ user, onLogout }) {
 
             if (response.ok) {
                 console.log('Project deleted successfully')
+                resetToDefaultTheme();
                 navigate('/') // Navigate back to home/dashboard
             } else {
                 console.error('Failed to delete project:', response.status)
@@ -339,7 +355,10 @@ function ProjectDetail({ user, onLogout }) {
             <div className="project-detail">
                 <div className="error-container">
                     <div className="error-message">{error}</div>
-                    <button onClick={() => navigate('/dashboard')} className="back-btn">
+                    <button onClick={() => {
+                        resetToDefaultTheme();
+                        navigate('/dashboard');
+                    }} className="back-btn">
                         Back to Dashboard
                     </button>
                 </div>
@@ -347,10 +366,10 @@ function ProjectDetail({ user, onLogout }) {
         )
     }
 
-    // Get current project theme colors (with fallback)
-    const activeTheme = currentTheme
-        ? getThemePreview(currentTheme.mode, currentTheme.palette)
-        : getThemePreview('Light', 'Coral') // Fallback while loading
+    // Get current preview theme colors (with fallback)
+    const activeTheme = themePreview
+        ? getThemePreview(themePreview.mode, themePreview.palette)
+        : getThemePreview('Light', 'Coral')
 
     return (
         <div
@@ -361,12 +380,17 @@ function ProjectDetail({ user, onLogout }) {
                 '--dark-coral': activeTheme.accent,
                 '--text-dark': activeTheme.text,
                 '--background': activeTheme.background,
-                backgroundColor: activeTheme.background
+                backgroundColor: activeTheme.background,
+                color: activeTheme.text,
+                minHeight: '100vh'
             }}
         >
             {/* Header */}
-            <div className="project-header">
-                <button onClick={() => navigate('/dashboard')} className="back-btn">
+            <div className="project-header" style={{ background: activeTheme.background, color: activeTheme.text }}>
+                <button onClick={() => {
+                    resetToDefaultTheme();
+                    navigate('/dashboard');
+                }} className="back-btn">
                     ←
                 </button>
 
@@ -379,7 +403,7 @@ function ProjectDetail({ user, onLogout }) {
                         />
                     </div>
 
-                    <div className="project-details">
+                    <div className="project-details" style={{ color: activeTheme.text }}>
                         <h1 className="project-title">{project.title}</h1>
                         {project.artistName && (
                             <p className="project-artist">by {project.artistName}</p>
@@ -391,17 +415,20 @@ function ProjectDetail({ user, onLogout }) {
 
                 <div className="header-actions">
                     <div className="user-profile">
-                        <div className="profile-avatar">
+                        <div className="profile-avatar" style={{ background: activeTheme.primary, color: activeTheme.text }}>
                             {user.displayName.charAt(0).toUpperCase()}
                         </div>
-                        <div className="profile-info">
+                        <div className="profile-info" style={{ color: activeTheme.text }}>
                             <div className="profile-name">{user.displayName}</div>
                             <div className="profile-role">
                                 {user.isProducer && user.isArtist ? 'Producer & Artist' :
                                     user.isProducer ? 'Producer' : 'Artist'}
                             </div>
                         </div>
-                        <button className="logout-btn" onClick={handleLogout}>
+                        <button className="logout-btn" onClick={() => {
+                            resetToDefaultTheme();
+                            handleLogout();
+                        }}>
                             Logout
                         </button>
                     </div>
@@ -409,28 +436,32 @@ function ProjectDetail({ user, onLogout }) {
             </div>
 
             {/* Tabs Navigation */}
-            <div className="project-tabs">
+            <div className="project-tabs" style={{ background: activeTheme.background, color: activeTheme.text, borderBottom: `1px solid ${activeTheme.primary}` }}>
                 <button
                     className={`tab-btn ${activeTab === 'tracks' ? 'active' : ''}`}
                     onClick={() => setActiveTab('tracks')}
+                    style={{ color: activeTheme.text }}
                 >
                     Tracks
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
                     onClick={() => setActiveTab('hitlist')}
+                    style={{ color: activeTheme.text }}
                 >
                     Hit List
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''}`}
                     onClick={() => setActiveTab('collaborators')}
+                    style={{ color: activeTheme.text }}
                 >
                     Collaborators
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
                     onClick={() => setActiveTab('settings')}
+                    style={{ color: activeTheme.text }}
                 >
                     Settings
                 </button>
@@ -569,8 +600,6 @@ function ProjectDetail({ user, onLogout }) {
                             <div className="setting-group">
                                 <h4>Project Theme</h4>
 
-
-
                                 {/* Theme Preview */}
                                 <div className="theme-preview-box" style={{
                                     backgroundColor: activeTheme.background,
@@ -581,15 +610,76 @@ function ProjectDetail({ user, onLogout }) {
                                     marginTop: '1rem'
                                 }}>
                                     <strong style={{ color: activeTheme.primary }}>
-                                        {currentTheme ? `${currentTheme.palette} - ${currentTheme.mode} Mode` : 'Loading theme...'}
+                                        {themePreview ? `${themePreview.palette} - ${themePreview.mode} Mode` : 'Loading theme...'}
                                     </strong>
                                     <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
                                         This is how your project theme will look with text and backgrounds.
                                     </p>
                                 </div>
 
-                                {/* Save Theme Button */}
+                                {/* Theme Controls */}
+                                <div className="theme-controls" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.2rem', marginTop: '1.5rem' }}>
+                                    {/* Light/Dark Mode Switch */}
+                                    <div className="theme-mode-switch" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span className="mode-label">Light</span>
+                                        <label className="switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={themePreview?.mode === 'Dark'}
+                                                onChange={e => handleProjectThemeMode(e.target.checked)}
+                                            />
+                                            <span className="slider"></span>
+                                        </label>
+                                        <span className="mode-label">Dark</span>
+                                    </div>
 
+                                    {/* Theme Cycle Button Centered & Circular */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button
+                                            type="button"
+                                            className="theme-cycle-btn"
+                                            onClick={cycleProjectTheme}
+                                            title={`Current: ${themePreview?.palette} • Click to cycle themes`}
+                                            style={{
+                                                background: activeTheme.primary,
+                                                borderColor: activeTheme.accent,
+                                                color: activeTheme.text,
+                                                width: '60px',
+                                                height: '60px',
+                                                borderRadius: '50%',
+                                                border: '2px solid',
+                                                fontWeight: 'bold',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.5rem',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.10)'
+                                            }}
+                                        >
+                                            {/* Optionally add an icon or emoji for cycling */}
+                                        </button>
+                                        <small className="theme-indicator" style={{ textAlign: 'center', minWidth: '60px', fontWeight: '500' }}>{themePreview?.palette}</small>
+                                    </div>
+                                </div>
+
+                                {/* Save Theme Button */}
+                                <button
+                                    className="save-theme-btn"
+                                    style={{
+                                        marginTop: '1.5rem',
+                                        background: activeTheme.primary,
+                                        color: activeTheme.text,
+                                        border: 'none',
+                                        padding: '0.7rem 1.5rem',
+                                        borderRadius: '8px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleUpdateProjectTheme(themePreview)}
+                                >
+                                    Save Theme
+                                </button>
                             </div>
 
                             <div className="setting-group">

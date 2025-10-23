@@ -108,9 +108,9 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                 return
             }
 
-            // Validate file size (max 10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                setErrors(prev => ({ ...prev, artwork: 'Image must be smaller than 10MB' }))
+            // Validate file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                setErrors(prev => ({ ...prev, artwork: 'Image must be smaller than 50MB' }))
                 return
             }
 

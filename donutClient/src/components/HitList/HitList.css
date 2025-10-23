@@ -4,8 +4,9 @@
     padding: 1.5rem;
     background: var(--theme-background);
     border-radius: 12px;
-    border: 1px solid var(--theme-secondary);
+    border: none;
     margin-bottom: 2rem;
+    box-shadow: none;
 }
 
 .hit-list-header {
@@ -50,20 +51,19 @@
 /* Post-it Note Style Item */
 .hit-list-item {
     background: var(--theme-background);
-    border: 1px solid var(--theme-secondary);
+    border: none;
     border-radius: 8px;
     padding: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     transition: all 0.3s ease;
     position: relative;
     min-height: 200px;
     border-left: 4px solid var(--theme-primary);
 }
 
-.hit-list-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border-left-width: 6px;
+/* Add: Use theme background for border area too */
+.hit-list {
+    background: var(--theme-background);
 }
 
 /* Edit Mode */
