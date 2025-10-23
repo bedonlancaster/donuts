@@ -162,7 +162,7 @@ function ProjectDetail({ user, onLogout }) {
         } else {
             // Play new track with project tracks as playlist
             const trackList = project.tracks || []
-            playTrack(track, trackList)
+            playTrack(track, trackList, project)
         }
     }
 
@@ -500,7 +500,7 @@ function ProjectDetail({ user, onLogout }) {
                                             >
                                                 {track.title}
                                             </h4>
-                                            <p>Uploaded by {track.uploadedBy.displayName}</p>
+                                            <p>{project.artistName || track.uploadedBy.displayName}</p>
                                         </div>
                                         <div className="track-duration">
                                             {track.duration ? formatDuration(track.duration) : '--:--'}

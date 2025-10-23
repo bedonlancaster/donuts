@@ -117,7 +117,7 @@ function Dashboard({ user, onLogout }) {
                     >
                         My DONUTS
                     </button>
-                    <button
+                    {/* <button
                         className={`nav-item ${selectedSection === 'sessions' ? 'active' : ''}`}
                         onClick={() => setSelectedSection('sessions')}
                     >
@@ -128,7 +128,7 @@ function Dashboard({ user, onLogout }) {
                         onClick={() => setSelectedSection('hitlist')}
                     >
                         Hit List
-                    </button>
+                    </button> */}
                 </nav>
 
                 <div className="sidebar-actions">

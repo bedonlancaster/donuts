@@ -5,6 +5,7 @@ const AudioPlayerContext = createContext()
 export const AudioPlayerProvider = ({ children }) => {
     // Playback state
     const [currentTrack, setCurrentTrack] = useState(null)
+    const [currentProject, setCurrentProject] = useState(null)
     const [isPlaying, setIsPlaying] = useState(false)
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
@@ -102,8 +103,11 @@ export const AudioPlayerProvider = ({ children }) => {
     }, [currentTrack])
 
     // Play specific track
-    const playTrack = useCallback((track, trackList = null) => {
+    const playTrack = useCallback((track, trackList = null, project = null) => {
         setCurrentTrack(track)
+        if (project) {
+            setCurrentProject(project)
+        }
 
         if (trackList) {
             setPlaylist(trackList)
@@ -246,6 +250,7 @@ export const AudioPlayerProvider = ({ children }) => {
     const value = {
         // State
         currentTrack,
+        currentProject,
         isPlaying,
         currentTime,
         duration,

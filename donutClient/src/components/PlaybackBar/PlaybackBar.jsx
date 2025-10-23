@@ -3,6 +3,7 @@ import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import './PlaybackBar.css'
 
 function PlaybackBar() {
+
     const {
         currentTrack,
         isPlaying,
@@ -16,7 +17,8 @@ function PlaybackBar() {
         seekTo,
         setPlayerVolume,
         toggleMute,
-        formatTime
+        formatTime,
+        currentProject
     } = useAudioPlayer()
 
     // Don't render if no track is loaded
@@ -47,7 +49,7 @@ function PlaybackBar() {
                     <div className="track-details">
                         <div className="track-title">{currentTrack.title}</div>
                         <div className="track-artist">
-                            {currentTrack.uploadedBy?.displayName || 'Unknown Artist'}
+                            {currentProject?.artistName || currentTrack.uploadedBy?.displayName || 'Unknown Artist'}
                         </div>
                     </div>
                 </div>

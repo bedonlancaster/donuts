@@ -386,7 +386,7 @@ function TrackDetail({ user, onLogout }) {
                     <div className="hitlist-section">
                         <div className="section-header">
                             <h2>Track Hit List</h2>
-                            <p>Discussion points and notes specific to this track</p>
+                            <p>Create a to-do list to get things done</p>
                         </div>
                         <HitList trackId={trackId} projectId={project.id} />
                     </div>
