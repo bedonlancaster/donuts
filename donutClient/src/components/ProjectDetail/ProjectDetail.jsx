@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
-import HitList from '../HitList/HitList'
+import KanbanHitList from '../HitList/KanbanHitList'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './ProjectDetail.css'
 
@@ -414,6 +414,50 @@ function ProjectDetail({ user, onLogout }) {
                 </div>
 
                 <div className="header-actions">
+                    {/* Tabs Navigation - moved into header */}
+                    <div className="project-tabs-inline" style={{ borderBottom: `2px solid ${activeTheme.primary}` }}>
+                        <button
+                            className={`tab-btn ${activeTab === 'tracks' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('tracks')}
+                            style={{
+                                color: activeTab === 'tracks' ? activeTheme.primary : activeTheme.text,
+                                borderBottom: activeTab === 'tracks' ? `2px solid ${activeTheme.primary}` : 'none'
+                            }}
+                        >
+                            Tracks
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('hitlist')}
+                            style={{
+                                color: activeTab === 'hitlist' ? activeTheme.primary : activeTheme.text,
+                                borderBottom: activeTab === 'hitlist' ? `2px solid ${activeTheme.primary}` : 'none'
+                            }}
+                        >
+                            Hit List
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('collaborators')}
+                            style={{
+                                color: activeTab === 'collaborators' ? activeTheme.primary : activeTheme.text,
+                                borderBottom: activeTab === 'collaborators' ? `2px solid ${activeTheme.primary}` : 'none'
+                            }}
+                        >
+                            Collaborators
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('settings')}
+                            style={{
+                                color: activeTab === 'settings' ? activeTheme.primary : activeTheme.text,
+                                borderBottom: activeTab === 'settings' ? `2px solid ${activeTheme.primary}` : 'none'
+                            }}
+                        >
+                            Settings
+                        </button>
+                    </div>
+
                     <div className="user-profile">
                         <div className="profile-avatar" style={{ background: activeTheme.primary, color: activeTheme.text }}>
                             {user.displayName.charAt(0).toUpperCase()}
@@ -433,38 +477,6 @@ function ProjectDetail({ user, onLogout }) {
                         </button>
                     </div>
                 </div>
-            </div>
-
-            {/* Tabs Navigation */}
-            <div className="project-tabs" style={{ background: activeTheme.background, color: activeTheme.text, borderBottom: `1px solid ${activeTheme.primary}` }}>
-                <button
-                    className={`tab-btn ${activeTab === 'tracks' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('tracks')}
-                    style={{ color: activeTheme.text }}
-                >
-                    Tracks
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('hitlist')}
-                    style={{ color: activeTheme.text }}
-                >
-                    Hit List
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('collaborators')}
-                    style={{ color: activeTheme.text }}
-                >
-                    Collaborators
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('settings')}
-                    style={{ color: activeTheme.text }}
-                >
-                    Settings
-                </button>
             </div>
 
             {/* Tab Content */}
@@ -495,8 +507,8 @@ function ProjectDetail({ user, onLogout }) {
                                         <div className="track-info">
                                             <h4
                                                 className="track-title-link"
-                                                onClick={() => navigate(`/project/${projectId}/track/${track.id}`)}
-                                                title="View track details"
+                                                onClick={() => navigate(`/project/${projectId}/track/${track.id}?tab=hitlist`)}
+                                                title="View track hit list"
                                             >
                                                 {track.title}
                                             </h4>
@@ -547,7 +559,7 @@ function ProjectDetail({ user, onLogout }) {
 
                 {activeTab === 'hitlist' && (
                     <div className="hitlist-section">
-                        <HitList projectId={projectId} />
+                        <KanbanHitList projectId={projectId} />
                     </div>
                 )}
 

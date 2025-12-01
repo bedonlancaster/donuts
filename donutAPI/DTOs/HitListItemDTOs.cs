@@ -19,6 +19,7 @@ namespace DonutAPI.DTOs
         public int? TrackId { get; set; }
 
         public HitListPriority Priority { get; set; } = HitListPriority.Medium;
+        public HitListCategory Category { get; set; } = HitListCategory.General;
         public DateTime? DueDate { get; set; }
     }
 
@@ -31,6 +32,8 @@ namespace DonutAPI.DTOs
         public string? Description { get; set; }
         public HitListPriority? Priority { get; set; }
         public HitListStatus? Status { get; set; }
+        public HitListCategory? Category { get; set; }
+        public int? SortOrder { get; set; }
         public DateTime? DueDate { get; set; }
     }
 
@@ -42,6 +45,8 @@ namespace DonutAPI.DTOs
         public string? Description { get; set; }
         public HitListPriority Priority { get; set; }
         public HitListStatus Status { get; set; }
+        public HitListCategory Category { get; set; }
+        public int SortOrder { get; set; }
         public DateTime? DueDate { get; set; }
         public DateTime? CompletedAt { get; set; }
 
