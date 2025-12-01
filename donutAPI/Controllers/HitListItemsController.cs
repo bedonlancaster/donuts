@@ -36,7 +36,8 @@ namespace DonutAPI.Controllers
                 .Include(h => h.CreatedBy)
                 .Include(h => h.Track)
                 .Where(h => h.ProjectId == projectId && h.TrackId == null)
-                .OrderBy(h => h.Priority)
+                .OrderBy(h => h.SortOrder)
+                .ThenBy(h => h.Priority)
                 .ThenBy(h => h.DueDate)
                 .Select(h => new HitListItemDto
                 {
@@ -45,6 +46,8 @@ namespace DonutAPI.Controllers
                     Description = h.Description,
                     Priority = h.Priority,
                     Status = h.Status,
+                    Category = h.Category,
+                    SortOrder = h.SortOrder,
                     DueDate = h.DueDate,
                     CompletedAt = h.CompletedAt,
                     ProjectId = h.ProjectId,
@@ -71,7 +74,8 @@ namespace DonutAPI.Controllers
                 .Include(h => h.CreatedBy)
                 .Include(h => h.Track)
                 .Where(h => h.TrackId == trackId)
-                .OrderBy(h => h.Priority)
+                .OrderBy(h => h.SortOrder)
+                .ThenBy(h => h.Priority)
                 .ThenBy(h => h.DueDate)
                 .Select(h => new HitListItemDto
                 {
@@ -80,6 +84,8 @@ namespace DonutAPI.Controllers
                     Description = h.Description,
                     Priority = h.Priority,
                     Status = h.Status,
+                    Category = h.Category,
+                    SortOrder = h.SortOrder,
                     DueDate = h.DueDate,
                     CompletedAt = h.CompletedAt,
                     ProjectId = h.ProjectId,
@@ -159,6 +165,7 @@ namespace DonutAPI.Controllers
                 ProjectId = createHitListItemDto.ProjectId,
                 TrackId = createHitListItemDto.TrackId,
                 Priority = createHitListItemDto.Priority,
+                Category = createHitListItemDto.Category,
                 DueDate = createHitListItemDto.DueDate,
                 CreatedById = user.Id,
                 Status = HitListStatus.Todo
@@ -182,6 +189,8 @@ namespace DonutAPI.Controllers
                 Description = hitListItem.Description,
                 Priority = hitListItem.Priority,
                 Status = hitListItem.Status,
+                Category = hitListItem.Category,
+                SortOrder = hitListItem.SortOrder,
                 DueDate = hitListItem.DueDate,
                 CompletedAt = hitListItem.CompletedAt,
                 ProjectId = hitListItem.ProjectId,
@@ -237,6 +246,12 @@ namespace DonutAPI.Controllers
                     hitListItem.CompletedAt = null;
                 }
             }
+
+            if (updateHitListItemDto.Category.HasValue)
+                hitListItem.Category = updateHitListItemDto.Category.Value;
+
+            if (updateHitListItemDto.SortOrder.HasValue)
+                hitListItem.SortOrder = updateHitListItemDto.SortOrder.Value;
 
             if (updateHitListItemDto.DueDate.HasValue)
                 hitListItem.DueDate = updateHitListItemDto.DueDate.Value;
@@ -327,6 +342,7 @@ namespace DonutAPI.Controllers
 
             var hitListItems = await query
                 .OrderBy(h => h.Status == HitListStatus.Complete ? 1 : 0) // Incomplete items first
+                .ThenBy(h => h.SortOrder)
                 .ThenByDescending(h => h.Priority)
                 .ThenBy(h => h.DueDate)
                 .Select(h => new HitListItemDto
@@ -336,6 +352,8 @@ namespace DonutAPI.Controllers
                     Description = h.Description,
                     Priority = h.Priority,
                     Status = h.Status,
+                    Category = h.Category,
+                    SortOrder = h.SortOrder,
                     DueDate = h.DueDate,
                     CompletedAt = h.CompletedAt,
                     ProjectId = h.ProjectId,
@@ -347,5 +365,47 @@ namespace DonutAPI.Controllers
 
             return Ok(hitListItems);
         }
+
+        // PUT: api/hitlistitems/reorder
+        [HttpPut("reorder")]
+        public async Task<IActionResult> ReorderHitListItems([FromBody] List<ReorderItemDto> reorderItems)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Get all items to reorder
+            var itemIds = reorderItems.Select(r => r.Id).ToList();
+            var items = await _context.HitListItems
+                .Where(h => itemIds.Contains(h.Id) && h.CreatedById == user.Id)
+                .ToListAsync();
+
+            if (items.Count != reorderItems.Count)
+            {
+                return BadRequest("Some items not found or you don't have permission");
+            }
+
+            // Update sort orders
+            foreach (var reorderDto in reorderItems)
+            {
+                var item = items.FirstOrDefault(i => i.Id == reorderDto.Id);
+                if (item != null)
+                {
+                    item.SortOrder = reorderDto.SortOrder;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Items reordered successfully" });
+        }
+    }
+
+    // DTO for batch reordering
+    public class ReorderItemDto
+    {
+        public int Id { get; set; }
+        public int SortOrder { get; set; }
     }
 }

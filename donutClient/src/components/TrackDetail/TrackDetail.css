@@ -100,8 +100,76 @@
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 2rem;
     margin-left: auto;
+}
+
+/* Track Navigation */
+.track-navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--theme-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--theme-primary);
+}
+
+.nav-track-btn {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nav-track-btn:hover:not(:disabled) {
+    background: var(--theme-accent);
+    transform: translateY(-1px);
+}
+
+.nav-track-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.track-counter {
+    color: var(--theme-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+}
+
+.project-tabs-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+}
+
+.project-tabs-inline .tab-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+}
+
+.project-tabs-inline .tab-btn:hover {
+    opacity: 0.8;
+}
+
+.project-tabs-inline .tab-btn.active {
+    opacity: 1;
 }
 
 .user-profile {
@@ -158,7 +226,8 @@
 
 /* Tabs - Same as ProjectDetail */
 .project-tabs {
-    display: flex;
+    display: none;
+    /* Hidden - using project-tabs-inline in header instead */
     background: rgba(255, 255, 255, 0.9);
     border-bottom: 1px solid var(--theme-primary);
     padding: 0 2rem;
@@ -202,9 +271,16 @@
 
 /* Tab Content - Same as ProjectDetail */
 .tab-content {
-    padding: 2rem;
-    max-width: 1200px;
+    padding: 0 2rem 2rem 2rem;
     margin: 0 auto;
+    transition: opacity 0.2s ease;
+}
+
+/* Full width for hitlist */
+.hitlist-section {
+    max-width: none;
+    margin: 0 -2rem;
+    padding: 0;
 }
 
 /* Section Headers - Same as ProjectDetail */

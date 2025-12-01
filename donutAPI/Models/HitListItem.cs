@@ -18,6 +18,17 @@ namespace DonutAPI.Models
         Complete = 3
     }
 
+    public enum HitListCategory
+    {
+        General = 0,
+        Production = 1,
+        Mixing = 2,
+        Mastering = 3,
+        Songwriting = 4,
+        Recording = 5,
+        Arrangement = 6
+    }
+
     public class HitListItem
     {
         public int Id { get; set; }
@@ -42,6 +53,11 @@ namespace DonutAPI.Models
 
         [Required]
         public HitListStatus Status { get; set; } = HitListStatus.Todo;
+
+        [Required]
+        public HitListCategory Category { get; set; } = HitListCategory.General;
+
+        public int SortOrder { get; set; } = 0;
 
         public DateTime? DueDate { get; set; }
         public DateTime? CompletedAt { get; set; }

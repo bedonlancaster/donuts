@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
-import HitList from '../HitList/HitList'
+import KanbanHitList from '../HitList/KanbanHitList'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './TrackDetail.css'
 
@@ -73,15 +73,19 @@ function TrackDetail({ user, onLogout }) {
     };
     const { projectId, trackId } = useParams()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const { currentTheme } = useTheme()
     const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer()
 
     const [track, setTrack] = useState(null)
     const [project, setProject] = useState(null) // We need project info for theme and display
+    const [allTracks, setAllTracks] = useState([]) // All project tracks for navigation
+    const [currentTrackIndex, setCurrentTrackIndex] = useState(-1)
     // Theme is now set by ThemeLoader; no local theme state needed
     const [loading, setLoading] = useState(true)
+    const [isNavigating, setIsNavigating] = useState(false) // Separate state for track navigation
     const [error, setError] = useState('')
-    const [activeTab, setActiveTab] = useState('details')
+    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'hitlist')
 
     // Debug logging
     console.log('TrackDetail component mounted')
@@ -97,7 +101,12 @@ function TrackDetail({ user, onLogout }) {
     useEffect(() => {
         const fetchTrack = async () => {
             try {
-                setLoading(true)
+                // Only show full loading on initial load, not when navigating between tracks
+                if (!allTracks.length) {
+                    setLoading(true)
+                } else {
+                    setIsNavigating(true)
+                }
                 console.log('Fetching track with ID:', trackId)
 
                 const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
@@ -112,7 +121,41 @@ function TrackDetail({ user, onLogout }) {
                     const trackData = await response.json()
                     console.log('Track data:', trackData)
                     setTrack(trackData)
-                    setProject(trackData.project) // Extract project info from track response
+
+                    // Only update project if it's not already set or if it's a different project
+                    if (!project || project.id !== trackData.project.id) {
+                        setProject(trackData.project)
+                    }
+
+                    // Only fetch full project data if we don't have tracks yet
+                    if (allTracks.length === 0 && trackData.project && trackData.project.id) {
+                        const projectResponse = await fetch(`http://localhost:5000/api/projects/${trackData.project.id}`, {
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+
+                        if (projectResponse.ok) {
+                            const fullProjectData = await projectResponse.json()
+                            if (fullProjectData.tracks && fullProjectData.tracks.length > 0) {
+                                const tracks = fullProjectData.tracks.sort((a, b) => a.orderIndex - b.orderIndex)
+                                setAllTracks(tracks)
+                                const index = tracks.findIndex(t => t.id === parseInt(trackId))
+                                setCurrentTrackIndex(index)
+                                console.log('Track navigation setup:', {
+                                    totalTracks: tracks.length,
+                                    currentIndex: index,
+                                    tracks: tracks.map(t => ({ id: t.id, title: t.title, orderIndex: t.orderIndex }))
+                                })
+                            }
+                        }
+                    } else if (allTracks.length > 0) {
+                        // Just update the index if we already have tracks
+                        const index = allTracks.findIndex(t => t.id === parseInt(trackId))
+                        setCurrentTrackIndex(index)
+                    }
                 } else if (response.status === 404) {
                     setError('Track not found')
                 } else if (response.status === 403) {
@@ -129,6 +172,7 @@ function TrackDetail({ user, onLogout }) {
                 setError('Network error loading track')
             } finally {
                 setLoading(false)
+                setIsNavigating(false)
             }
         }
 
@@ -197,6 +241,24 @@ function TrackDetail({ user, onLogout }) {
         return []
     }
 
+    const handleNavigateTrack = (direction) => {
+        if (!allTracks || allTracks.length === 0) return
+
+        let newIndex = currentTrackIndex
+        if (direction === 'prev') {
+            // Wrap to last track if at beginning
+            newIndex = currentTrackIndex <= 0 ? allTracks.length - 1 : currentTrackIndex - 1
+        } else if (direction === 'next') {
+            // Wrap to first track if at end
+            newIndex = currentTrackIndex >= allTracks.length - 1 ? 0 : currentTrackIndex + 1
+        }
+
+        if (newIndex !== currentTrackIndex) {
+            const targetTrack = allTracks[newIndex]
+            navigate(`/project/${projectId}/track/${targetTrack.id}?tab=hitlist`)
+        }
+    }
+
     const formatDuration = (duration) => {
         if (!duration) return '--:--'
         const minutes = Math.floor(duration / 60)
@@ -242,7 +304,7 @@ function TrackDetail({ user, onLogout }) {
     }
 
     return (
-        <div className="track-detail">
+        <div className="track-detail" style={{ opacity: isNavigating ? 0.6 : 1, transition: 'opacity 0.15s ease' }}>
             {/* Header - Same structure as ProjectDetail */}
             <div className="project-header">
                 <button
@@ -272,6 +334,33 @@ function TrackDetail({ user, onLogout }) {
                 </div>
 
                 <div className="header-actions">
+                    {/* Tabs Navigation - moved into header */}
+                    <div className="project-tabs-inline">
+                        <button
+                            className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('details')}
+                            style={{
+                                color: activeTab === 'details' ? 'var(--theme-primary)' : 'var(--theme-text)',
+                                borderBottom: activeTab === 'details' ? '2px solid var(--theme-primary)' : 'none'
+                            }}
+                        >
+                            Track Details
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('hitlist')}
+                            style={{
+                                color: activeTab === 'hitlist' ? 'var(--theme-primary)' : 'var(--theme-text)',
+                                borderBottom: activeTab === 'hitlist' ? '2px solid var(--theme-primary)' : 'none'
+                            }}
+                        >
+                            Hit List
+                            {track.hitListItems && track.hitListItems.length > 0 && (
+                                <span className="tab-badge">({track.hitListItems.length})</span>
+                            )}
+                        </button>
+                    </div>
+
                     <div className="user-profile">
                         <div className="profile-avatar">
                             {user.displayName.charAt(0).toUpperCase()}
@@ -288,25 +377,6 @@ function TrackDetail({ user, onLogout }) {
                         </button>
                     </div>
                 </div>
-            </div>
-
-            {/* Tabs Navigation - Similar to ProjectDetail but track-specific */}
-            <div className="project-tabs">
-                <button
-                    className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('details')}
-                >
-                    Track Details
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('hitlist')}
-                >
-                    Hit List
-                    {track.hitListItems && track.hitListItems.length > 0 && (
-                        <span className="tab-badge">({track.hitListItems.length})</span>
-                    )}
-                </button>
             </div>
 
             {/* Tab Content */}
@@ -388,7 +458,13 @@ function TrackDetail({ user, onLogout }) {
                             <h2>Track Hit List</h2>
                             <p>Create a to-do list to get things done</p>
                         </div>
-                        <HitList trackId={trackId} projectId={project.id} />
+                        <KanbanHitList
+                            trackId={trackId}
+                            projectId={project.id}
+                            allTracks={allTracks}
+                            currentTrackIndex={currentTrackIndex}
+                            onNavigateTrack={handleNavigateTrack}
+                        />
                     </div>
                 )}
             </div>

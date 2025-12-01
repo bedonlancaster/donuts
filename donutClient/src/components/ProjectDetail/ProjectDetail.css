@@ -123,7 +123,7 @@
     background: var(--background);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--theme-primary);
-    padding: 2rem 3rem;
+    padding: 1.25rem 3rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -151,9 +151,9 @@
 .project-info {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     flex: 1;
-    margin-left: 2rem;
+    margin-left: 1.5rem;
 }
 
 .project-artwork {
@@ -161,8 +161,8 @@
 }
 
 .artwork-image {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid var(--theme-primary);
@@ -171,7 +171,7 @@
 .project-details h1 {
     color: var(--theme-primary);
     margin: 0 0 0.25rem 0;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 700;
 }
 
@@ -204,7 +204,35 @@
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 2rem;
+    margin-left: auto;
+}
+
+.project-tabs-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+}
+
+.project-tabs-inline .tab-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+}
+
+.project-tabs-inline .tab-btn:hover {
+    opacity: 0.8;
+}
+
+.project-tabs-inline .tab-btn.active {
+    opacity: 1;
 }
 
 .theme-cycle-btn {
@@ -229,8 +257,8 @@
 }
 
 .profile-avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     background: var(--theme-primary);
     color: white;
     border-radius: 50%;
@@ -238,7 +266,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .profile-info {
@@ -273,15 +301,7 @@
     color: white;
 }
 
-/* Tabs - adapts background to theme mode */
-.project-tabs {
-    background: var(--background);
-    backdrop-filter: blur(5px);
-    border-bottom: 1px solid var(--theme-primary);
-    display: flex;
-    padding: 0 3rem;
-    transition: all 0.3s ease;
-}
+/* Old project-tabs removed - now using project-tabs-inline in header */
 
 .tab-btn {
     background: none;
@@ -310,8 +330,14 @@
 
 /* Tab Content */
 .tab-content {
-    padding: 2rem 3rem;
+    padding: 0 3rem 2rem 3rem;
     min-height: 60vh;
+}
+
+/* Full width for hitlist */
+.hitlist-section {
+    margin: 0 -3rem;
+    padding: 0;
 }
 
 .section-header {
