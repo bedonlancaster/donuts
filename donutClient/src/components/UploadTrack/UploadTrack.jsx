@@ -12,6 +12,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
     })
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
     const [uploadProgress, setUploadProgress] = useState(0)
 
     // Fetch project details to show context
@@ -186,6 +187,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
 
                     <form onSubmit={handleSubmit} className="upload-form">
                         {error && <div className="error-message">{error}</div>}
+                        {success && <div className="success-message">{success}</div>}
 
                         {/* Track Title */}
                         <div className="form-group">
