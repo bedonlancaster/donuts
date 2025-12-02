@@ -100,7 +100,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
             uploadData.append('audioFile', formData.audioFile)
             uploadData.append('projectId', projectId)
             uploadData.append('orderIndex', '0') // Let backend auto-calculate
-            uploadData.append('status', 'Demo') // Default status
+            uploadData.append('status', 'Doing') // Default status
 
             const response = await fetch(`http://localhost:5000/api/tracks/upload`, {
                 method: 'POST',
@@ -110,8 +110,10 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
 
             if (response.ok) {
                 const newTrack = await response.json()
-                console.log('Track uploaded successfully!', newTrack)
-                onSuccess(projectId) // Navigate back to project
+                setSuccess('Track uploaded successfully!')
+                setTimeout(() => {
+                    onSuccess(projectId) // Navigate back to project
+                }, 1000)
             } else {
                 const errorData = await response.json()
                 setError(errorData.message || 'Failed to upload track')

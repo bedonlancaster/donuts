@@ -46,12 +46,10 @@ function AppContent() {
   }
 
   const handleRegistrationSuccess = (userData) => {
-    console.log('Registration successful!', userData)
     navigate('/')
   }
 
   const handleCreateDonutSuccess = (newDonut) => {
-    console.log('DONUT created successfully!', newDonut)
     navigate('/dashboard')
   }
 

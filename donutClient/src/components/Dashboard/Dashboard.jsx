@@ -65,7 +65,7 @@ function Dashboard({ user, onLogout }) {
                     alt={project.title}
                     className="donut-logo"
                 />
-                <div className="donut-status">{project.status}</div>
+                {/* <div className="donut-status">{project.status === 1 ? 'Doing' : project.status === 2 ? 'Done' : project.status}</div> */}
             </div>
             <div className="donut-info">
                 <h3 className="donut-title">{project.title}</h3>
@@ -79,10 +79,10 @@ function Dashboard({ user, onLogout }) {
             {/* Main Content Area */}
             <div className="dashboard-main">
                 <div className="content-header">
-                    <h1>My DONUTS</h1>
+                    <h1>DONUTS</h1>
                     <p className="content-subtitle">
                         {user.isProducer
-                            ? "Your collaborative projects with artists"
+                            ? "Collaborative projects with people"
                             : "Projects you're working on with producers"
                         }
                     </p>

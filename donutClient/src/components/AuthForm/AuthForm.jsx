@@ -55,7 +55,6 @@ function AuthForm({ onBack, onLoginSuccess }) {
 
             if (response.ok) {
                 const userData = await response.json()
-                console.log('Login successful!', userData)
 
                 // Store user data and redirect to dashboard
                 localStorage.setItem('user', JSON.stringify(userData))

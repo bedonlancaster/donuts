@@ -21,11 +21,11 @@ namespace DonutAPI.Models
     public enum HitListCategory
     {
         General = 0,
-        Production = 1,
-        Mixing = 2,
-        Mastering = 3,
-        Songwriting = 4,
-        Recording = 5,
+        Tracking = 1,
+        Production = 2,
+        Mixing = 3,
+        Mastering = 4,
+        Songwriting = 5,
         Arrangement = 6
     }
 

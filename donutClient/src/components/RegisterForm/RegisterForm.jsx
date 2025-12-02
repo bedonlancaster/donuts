@@ -150,7 +150,6 @@ function RegisterForm({ onBack, onSuccess }) {
 
             if (response.ok) {
                 const userData = await response.json()
-                console.log('Registration successful:', userData)
                 onSuccess?.(userData)
             } else {
                 const errorData = await response.json()

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import KanbanHitList from '../HitList/KanbanHitList'
+import ProjectHeader from '../ProjectHeader/ProjectHeader'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './ProjectDetail.css'
 
@@ -52,12 +53,6 @@ function ProjectDetail({ user, onLogout }) {
     const [draggedTrack, setDraggedTrack] = useState(null)
     const [dragOverIndex, setDragOverIndex] = useState(null)
 
-    // Debug logging
-    console.log('ProjectDetail component mounted')
-    console.log('Project ID from URL:', projectId)
-    console.log('User prop:', user)
-    console.log('Current theme:', currentTheme)
-
     // Theme is set by ThemeLoader; no need to set theme here
 
     // Palette mapping is now centralized in themeUtils
@@ -99,8 +94,6 @@ function ProjectDetail({ user, onLogout }) {
         const fetchProject = async () => {
             try {
                 setLoading(true)
-                console.log('Fetching project with ID:', projectId)
-                console.log('User:', user)
 
                 const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
                     method: 'GET',
@@ -110,18 +103,8 @@ function ProjectDetail({ user, onLogout }) {
                     }
                 })
 
-                console.log('Response status:', response.status)
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()))
-
                 if (response.ok) {
                     const projectData = await response.json()
-                    console.log('Project data:', projectData)
-                    console.log('Project tracks:', projectData.tracks)
-                    console.log('Total duration:', projectData.totalDuration)
-                    // Log each track's duration
-                    projectData.tracks?.forEach((track, index) => {
-                        console.log(`Track ${index + 1}: ${track.title} - Duration:`, track.duration, typeof track.duration)
-                    })
                     setProject(projectData)
                 } else if (response.status === 404) {
                     setError('Project not found')
@@ -174,13 +157,11 @@ function ProjectDetail({ user, onLogout }) {
 
     // Drag and drop handlers - memoized to prevent re-creation
     const handleDragStart = useCallback((e, track, index) => {
-        console.log('🔵 Drag start:', track.title, index)
         setDraggedTrack({ track, index })
         e.dataTransfer.effectAllowed = 'move'
     }, [])
 
     const handleDragEnd = useCallback((e) => {
-        console.log('🔴 Drag end')
         setDraggedTrack(null)
         setDragOverIndex(null)
     }, [])
@@ -200,7 +181,6 @@ function ProjectDetail({ user, onLogout }) {
     }, [])
 
     const handleDrop = async (e, dropIndex) => {
-        console.log('Drop at index:', dropIndex)
         e.preventDefault()
 
         if (!draggedTrack || draggedTrack.index === dropIndex) {
@@ -261,8 +241,6 @@ function ProjectDetail({ user, onLogout }) {
 
     const handleUpdateProjectTheme = async (themeSettings) => {
         try {
-            console.log('Updating project theme:', themeSettings)
-
             // Get the color values for this theme
             const colors = getThemePreview(themeSettings.mode, themeSettings.palette)
 
@@ -294,25 +272,7 @@ function ProjectDetail({ user, onLogout }) {
                 })
             })
 
-            console.log('🎨 Theme Debug - ProjectDetail UPDATE:')
-            console.log('Theme settings:', themeSettings)
-            console.log('Theme colors:', colors)
-            console.log('Mode enum:', modeEnum)
-            console.log('Palette enum:', getPaletteEnum(themeSettings.palette))
-            console.log('Sent payload:', {
-                theme: {
-                    mode: modeEnum,
-                    palette: getPaletteEnum(themeSettings.palette),
-                    primaryColor: colors.primary,
-                    secondaryColor: colors.secondary,
-                    accentColor: colors.accent,
-                    backgroundColor: colors.background,
-                    textColor: colors.text
-                }
-            })
-
             if (response.ok) {
-                console.log('Project theme updated successfully')
                 // Refresh project data to get updated theme
                 window.location.reload()
             } else {
@@ -331,7 +291,6 @@ function ProjectDetail({ user, onLogout }) {
             })
 
             if (response.ok) {
-                console.log('Project deleted successfully')
                 resetToDefaultTheme();
                 navigate('/') // Navigate back to home/dashboard
             } else {
@@ -343,6 +302,36 @@ function ProjectDetail({ user, onLogout }) {
             setError('Error deleting project')
         }
         setShowDeleteConfirm(false)
+    }
+
+    const handleUpdateProjectStatus = async () => {
+        if (!project) return
+
+        const newStatus = project.status === 1 ? 2 : 1
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: project.title,
+                    artistName: project.artistName,
+                    description: project.description,
+                    status: newStatus
+                })
+            })
+
+            if (response.ok) {
+                setProject({ ...project, status: newStatus })
+            } else {
+                console.error('Failed to update project status:', response.status)
+            }
+        } catch (error) {
+            console.error('Error updating project status:', error)
+        }
     }
 
     if (loading) {
@@ -391,98 +380,72 @@ function ProjectDetail({ user, onLogout }) {
             }}
         >
             {/* Header */}
-            <div className="project-header" style={{ background: activeTheme.background, color: activeTheme.text }}>
-                <button onClick={() => {
+            <ProjectHeader
+                project={project}
+                onStatusUpdate={handleUpdateProjectStatus}
+                onBack={() => {
                     resetToDefaultTheme();
                     navigate('/dashboard');
-                }} className="back-btn">
-                    ←
-                </button>
-
-                <div className="project-info">
-                    <div className="project-artwork">
-                        <img
-                            src={project.artworkUrl ? `http://localhost:5000${project.artworkUrl}` : donutLogo}
-                            alt={project.title}
-                            className="artwork-image"
-                        />
-                    </div>
-
-                    <div className="project-details" style={{ color: activeTheme.text }}>
-                        <h1 className="project-title">{project.title}</h1>
-                        {project.artistName && (
-                            <p className="project-artist">by {project.artistName}</p>
-                        )}
-                        <p className="project-description">{project.description}</p>
-                        <div className="project-status">Status: {project.status}</div>
-                    </div>
+                }}
+                activeTheme={activeTheme}
+            >
+                {/* Tabs Navigation */}
+                <div className="project-tabs-inline" style={{ borderBottom: `2px solid ${activeTheme.primary}` }}>
+                    <button
+                        className={`tab-btn ${activeTab === 'tracks' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('tracks')}
+                        style={{
+                            color: activeTab === 'tracks' ? activeTheme.primary : activeTheme.text,
+                            borderBottom: activeTab === 'tracks' ? `2px solid ${activeTheme.primary}` : 'none'
+                        }}
+                    >
+                        Tracks
+                    </button>
+                    <button
+                        className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('hitlist')}
+                        style={{
+                            color: activeTab === 'hitlist' ? activeTheme.primary : activeTheme.text,
+                            borderBottom: activeTab === 'hitlist' ? `2px solid ${activeTheme.primary}` : 'none'
+                        }}
+                    >
+                        Hit List
+                    </button>
+                    <button
+                        className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('collaborators')}
+                        style={{
+                            color: activeTab === 'collaborators' ? activeTheme.primary : activeTheme.text,
+                            borderBottom: activeTab === 'collaborators' ? `2px solid ${activeTheme.primary}` : 'none'
+                        }}
+                    >
+                        Collaborators
+                    </button>
+                    <button
+                        className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('settings')}
+                        style={{
+                            color: activeTab === 'settings' ? activeTheme.primary : activeTheme.text,
+                            borderBottom: activeTab === 'settings' ? `2px solid ${activeTheme.primary}` : 'none'
+                        }}
+                    >
+                        Settings
+                    </button>
                 </div>
 
-                <div className="header-actions">
-                    {/* Tabs Navigation - moved into header */}
-                    <div className="project-tabs-inline" style={{ borderBottom: `2px solid ${activeTheme.primary}` }}>
-                        <button
-                            className={`tab-btn ${activeTab === 'tracks' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('tracks')}
-                            style={{
-                                color: activeTab === 'tracks' ? activeTheme.primary : activeTheme.text,
-                                borderBottom: activeTab === 'tracks' ? `2px solid ${activeTheme.primary}` : 'none'
-                            }}
-                        >
-                            Tracks
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('hitlist')}
-                            style={{
-                                color: activeTab === 'hitlist' ? activeTheme.primary : activeTheme.text,
-                                borderBottom: activeTab === 'hitlist' ? `2px solid ${activeTheme.primary}` : 'none'
-                            }}
-                        >
-                            Hit List
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('collaborators')}
-                            style={{
-                                color: activeTab === 'collaborators' ? activeTheme.primary : activeTheme.text,
-                                borderBottom: activeTab === 'collaborators' ? `2px solid ${activeTheme.primary}` : 'none'
-                            }}
-                        >
-                            Collaborators
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('settings')}
-                            style={{
-                                color: activeTab === 'settings' ? activeTheme.primary : activeTheme.text,
-                                borderBottom: activeTab === 'settings' ? `2px solid ${activeTheme.primary}` : 'none'
-                            }}
-                        >
-                            Settings
-                        </button>
+                <div className="user-profile">
+                    <div className="profile-avatar" style={{ background: activeTheme.primary, color: activeTheme.text }}>
+                        {user.displayName.charAt(0).toUpperCase()}
                     </div>
-
-                    <div className="user-profile">
-                        <div className="profile-avatar" style={{ background: activeTheme.primary, color: activeTheme.text }}>
-                            {user.displayName.charAt(0).toUpperCase()}
+                    <div className="profile-info">
+                        <div className="profile-name" style={{ color: activeTheme.text }}>{user.displayName}</div>
+                        <div className="profile-role">
+                            {user.isProducer && user.isArtist ? 'Producer & Artist' :
+                                user.isProducer ? 'Producer' : 'Artist'}
                         </div>
-                        <div className="profile-info" style={{ color: activeTheme.text }}>
-                            <div className="profile-name">{user.displayName}</div>
-                            <div className="profile-role">
-                                {user.isProducer && user.isArtist ? 'Producer & Artist' :
-                                    user.isProducer ? 'Producer' : 'Artist'}
-                            </div>
-                        </div>
-                        <button className="logout-btn" onClick={() => {
-                            resetToDefaultTheme();
-                            handleLogout();
-                        }}>
-                            Logout
-                        </button>
                     </div>
                 </div>
-            </div>
+            </ProjectHeader>
 
             {/* Tab Content */}
             <div className="tab-content">
@@ -493,7 +456,7 @@ function ProjectDetail({ user, onLogout }) {
                                 {/* <h2>Tracks</h2> */}
                                 {project.totalDuration && (
                                     <span className="total-duration">
-                                        {formatDuration(project.totalDuration)} total
+                                        Runtime: {formatDuration(project.totalDuration)}
                                     </span>
                                 )}
                             </div>
@@ -719,7 +682,6 @@ function ProjectDetail({ user, onLogout }) {
                                                 headers: { 'Content-Type': 'application/json' }
                                             })
                                             const result = await response.json()
-                                            console.log('Duration update result:', result)
                                             alert(`Updated ${result.updated} tracks, ${result.failed} failed`)
                                             // Refresh the page to see updated durations
                                             window.location.reload()
@@ -835,8 +797,6 @@ function ProjectDetail({ user, onLogout }) {
 
 // Helper function to format duration
 const formatDuration = (duration) => {
-    console.log('formatDuration called with:', duration, 'Type:', typeof duration)
-
     if (!duration) return '--:--'
 
     // Handle different duration formats from the API

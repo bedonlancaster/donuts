@@ -5,9 +5,8 @@ namespace DonutAPI.Models
 {
     public enum ProjectStatus
     {
-        Active = 1,
-        Completed = 2,
-        Archived = 3
+        Doing = 1,
+        Done = 2
     }
 
     public class Project
@@ -31,7 +30,7 @@ namespace DonutAPI.Models
         public int CreatedById { get; set; }
 
         [Required]
-        public ProjectStatus Status { get; set; } = ProjectStatus.Active;
+        public ProjectStatus Status { get; set; } = ProjectStatus.Doing;
 
         // Navigation Properties
         [ForeignKey("CreatedById")]

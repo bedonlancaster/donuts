@@ -34,7 +34,6 @@ export const AudioPlayerProvider = ({ children }) => {
         }
 
         const handleEnded = () => {
-            console.log('Track ended, attempting to play next track')
             if (playNextRef.current) {
                 playNextRef.current()
             }
@@ -75,8 +74,6 @@ export const AudioPlayerProvider = ({ children }) => {
             const audio = audioRef.current
             // Construct full URL for audio file
             const audioUrl = `http://localhost:5000${currentTrack.fileUrl}`
-            console.log('Setting audio URL:', audioUrl)
-            console.log('Current track:', currentTrack)
 
             // Only reload if it's a different track
             if (audio.src !== audioUrl) {
@@ -141,21 +138,12 @@ export const AudioPlayerProvider = ({ children }) => {
 
     // Play next track
     const playNext = useCallback(() => {
-        console.log('playNext called:', {
-            playlistLength: playlist.length,
-            currentTrackIndex,
-            playlist: playlist.map(t => t.title)
-        })
-
         if (playlist.length === 0 || currentTrackIndex === -1) {
-            console.log('Cannot play next: no playlist or invalid index')
             return
         }
 
         const nextIndex = (currentTrackIndex + 1) % playlist.length
         const nextTrack = playlist[nextIndex]
-
-        console.log('Playing next track:', { nextIndex, nextTrack: nextTrack?.title })
 
         if (nextTrack) {
             setCurrentTrackIndex(nextIndex)
@@ -170,21 +158,12 @@ export const AudioPlayerProvider = ({ children }) => {
 
     // Play previous track
     const playPrevious = useCallback(() => {
-        console.log('playPrevious called:', {
-            playlistLength: playlist.length,
-            currentTrackIndex,
-            playlist: playlist.map(t => t.title)
-        })
-
         if (playlist.length === 0 || currentTrackIndex === -1) {
-            console.log('Cannot play previous: no playlist or invalid index')
             return
         }
 
         const prevIndex = currentTrackIndex === 0 ? playlist.length - 1 : currentTrackIndex - 1
         const prevTrack = playlist[prevIndex]
-
-        console.log('Previous track:', { prevIndex, prevTrack: prevTrack?.title })
 
         if (prevTrack) {
             setCurrentTrackIndex(prevIndex)

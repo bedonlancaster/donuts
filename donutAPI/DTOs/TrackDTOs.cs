@@ -14,7 +14,7 @@ namespace DonutAPI.DTOs
         public int ProjectId { get; set; }
 
         public int OrderIndex { get; set; } = 0;
-        public TrackStatus Status { get; set; } = TrackStatus.Demo;
+        public TrackStatus Status { get; set; } = TrackStatus.Doing;
     }
 
     // For updating track metadata (not file)
@@ -48,7 +48,7 @@ namespace DonutAPI.DTOs
         public IFormFile AudioFile { get; set; } = null!;
 
         public int OrderIndex { get; set; } = 0;
-        public TrackStatus Status { get; set; } = TrackStatus.Demo;
+        public TrackStatus Status { get; set; } = TrackStatus.Doing;
     }
 
     // For reordering tracks

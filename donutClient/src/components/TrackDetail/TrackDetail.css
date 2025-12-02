@@ -13,7 +13,7 @@
     border: 1px solid var(--theme-primary);
     color: var(--theme-primary);
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 2px;
     cursor: pointer;
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
@@ -28,13 +28,14 @@
 
 /* Project Header - Same as ProjectDetail */
 .project-header {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--background);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--theme-accent);
+    border-bottom: 1px solid var(--theme-primary);
     padding: 2rem;
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: all 0.3s ease;
 }
 
 .project-info {
@@ -288,7 +289,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0rem;
+    margin-top: 0.5rem;
+    margin-left: 1.5rem;
 }
 
 .section-header h2 {
@@ -306,7 +309,7 @@
 
 /* Track Header Info - moved from top section */
 .track-header-info {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--theme-background);
     backdrop-filter: blur(5px);
     padding: 2rem;
     border-radius: 12px;
@@ -316,7 +319,7 @@
 }
 
 .track-header-info:hover {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--theme-background);
     border-color: var(--theme-primary);
     transform: translateY(-2px);
 }
@@ -370,7 +373,7 @@
 }
 
 .detail-item {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--theme-background);
     backdrop-filter: blur(5px);
     padding: 1.5rem;
     border-radius: 12px;
@@ -382,7 +385,7 @@
 }
 
 .detail-item:hover {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--theme-background);
     border-color: var(--theme-primary);
     transform: translateY(-2px);
 }
@@ -402,9 +405,10 @@
 }
 
 .status-badge {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-background);
     padding: 0.25rem 0.75rem;
+    border: var(--theme-primary);
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -413,7 +417,7 @@
 
 /* Audio Player Section */
 .audio-player-section {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--theme-background);
     backdrop-filter: blur(5px);
     padding: 2rem;
     border-radius: 12px;
@@ -422,7 +426,7 @@
 }
 
 .audio-player-section:hover {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--theme-background);
     border-color: var(--theme-primary);
 }
 
@@ -441,7 +445,7 @@
 
 /* Hit List Section - Same as ProjectDetail */
 .hitlist-section {
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--theme-background);
     backdrop-filter: blur(5px);
     border-radius: 12px;
     padding: 1rem;
@@ -489,7 +493,8 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .project-header {
-        padding: 1rem;
+        padding: -rem;
+        margin-bottom: -5rem;
     }
 
     .project-info {

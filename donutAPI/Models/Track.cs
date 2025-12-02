@@ -5,10 +5,8 @@ namespace DonutAPI.Models
 {
     public enum TrackStatus
     {
-        Demo = 1,
-        InProgress = 2,
-        Review = 3,
-        Final = 4
+        Doing = 1,
+        Done = 2
     }
 
     public class Track
@@ -33,7 +31,7 @@ namespace DonutAPI.Models
         public int UploadedById { get; set; }
 
         [Required]
-        public TrackStatus Status { get; set; } = TrackStatus.Demo;
+        public TrackStatus Status { get; set; } = TrackStatus.Doing;
 
         // Navigation Properties
         [ForeignKey("ProjectId")]

@@ -79,13 +79,10 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
         return paletteMap[paletteName] || 1 // Default to Coral
     }
 
-    const cycleToNextTheme = () => {
-        console.log('Current palette:', formData.theme.palette)
-        console.log('Available palettes:', PALETTE_ORDER)
+    const cyclePalette = () => {
         const currentIndex = PALETTE_ORDER.indexOf(formData.theme.palette)
         const nextIndex = (currentIndex + 1) % PALETTE_ORDER.length
         const nextPalette = PALETTE_ORDER[nextIndex]
-        console.log('Cycling from', formData.theme.palette, 'to', nextPalette)
 
         handleThemeChange('palette', nextPalette)
     }
@@ -149,29 +146,16 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
             ...prevData,
             theme: updatedTheme
         }))
-
-        // Theme preview will be applied automatically by useEffect
-        console.log('Theme changed:', updatedTheme.mode, updatedTheme.palette)
     }
 
 
 
     // Apply initial theme on mount and track changes
     useEffect(() => {
-        console.log('🎨 Applying theme preview:', formData.theme.mode, formData.theme.palette)
         setPreviewTheme({
             mode: formData.theme.mode,
             palette: formData.theme.palette
         })
-
-        // Debug: Log current CSS variables
-        setTimeout(() => {
-            const root = document.documentElement
-            const primary = getComputedStyle(root).getPropertyValue('--theme-primary')
-            const secondary = getComputedStyle(root).getPropertyValue('--theme-secondary')
-            const background = getComputedStyle(root).getPropertyValue('--theme-background')
-            console.log('🎨 CSS Variables applied:', { primary, secondary, background })
-        }, 100)
     }, [formData.theme.mode, formData.theme.palette]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Reset theme when component unmounts
@@ -296,12 +280,6 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                 }
             }
 
-            console.log('🎨 Theme Debug - CreateNewDonut:')
-            console.log('Form theme:', formData.theme)
-            console.log('Theme colors:', themeColors)
-            console.log('Final project data:', projectData)
-            console.log('Palette enum value:', getPaletteEnumValue(formData.theme.palette))
-
             const response = await fetch('http://localhost:5000/api/projects', {
                 method: 'POST',
                 headers: {
@@ -326,12 +304,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                             body: artworkFormData
                         })
 
-                        if (artworkResponse.ok) {
-                            const artworkResult = await artworkResponse.json()
-                            console.log('Artwork uploaded successfully:', artworkResult.artworkUrl)
-                            // Update newProject with artwork URL for the callback
-                            newProject.artworkUrl = artworkResult.artworkUrl
-                        } else {
+                        if (!artworkResponse.ok) {
                             const artworkError = await artworkResponse.text()
                             console.error('Failed to upload artwork:', artworkError)
                             setErrors(prev => ({
@@ -350,8 +323,6 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
 
                 // Add collaborators if any were selected
                 if (formData.collaborators.length > 0) {
-                    console.log('Adding collaborators to project:', formData.collaborators)
-
                     for (const collaborator of formData.collaborators) {
                         try {
                             const collabResponse = await fetch(`http://localhost:5000/api/projects/${newProject.id}/collaborators`, {
@@ -370,9 +341,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                                 })
                             })
 
-                            if (collabResponse.ok) {
-                                console.log(`Successfully added collaborator: ${collaborator.email}`)
-                            } else {
+                            if (!collabResponse.ok) {
                                 console.error(`Failed to add collaborator ${collaborator.email}:`, await collabResponse.text())
                             }
                         } catch (error) {
@@ -381,7 +350,6 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     }
                 }
 
-                console.log('DONUT created successfully!', newProject)
                 onSuccess(newProject)
             } else {
                 const errorData = await response.json()

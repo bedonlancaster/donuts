@@ -5,9 +5,11 @@ import './KanbanHitList.css'
 // Category constants - no emojis, use theme colors
 const CATEGORIES = {
     0: { name: 'General' },
-    1: { name: 'Production' },
-    2: { name: 'Mixing' },
-    3: { name: 'Mastering' }
+    1: { name: 'Tracking' },
+    2: { name: 'Production' },
+    3: { name: 'Mixing' },
+    4: { name: 'Mastering' },
+    5: { name: 'Songwriting' }
 }
 
 // Priority constants - simplified
@@ -225,16 +227,6 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
     const apiEndpoint = isTrackLevel
         ? `http://localhost:5000/api/hitlistitems/track/${trackId}`
         : `http://localhost:5000/api/hitlistitems/project/${projectId}`
-
-    // Debug logging for track navigation props
-    console.log('KanbanHitList props:', {
-        isTrackLevel,
-        allTracks,
-        currentTrackIndex,
-        onNavigateTrack,
-        hasAllTracks: allTracks && allTracks.length > 0,
-        hasNavigateFunction: typeof onNavigateTrack === 'function'
-    })
 
     // Global keyboard listener for Enter to create new item
     useEffect(() => {
@@ -581,37 +573,67 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
         return <div className="kanban-loading">Loading...</div>
     }
 
+    const cycleCategory = () => {
+        const categories = ['all', ...Object.keys(CATEGORIES)]
+        const currentIndex = categories.indexOf(selectedCategory)
+        const nextIndex = (currentIndex + 1) % categories.length
+        setSelectedCategory(categories[nextIndex])
+    }
+
+    const cyclePriority = () => {
+        const priorities = ['all', ...Object.keys(PRIORITIES)]
+        const currentIndex = priorities.indexOf(selectedPriority)
+        const nextIndex = (currentIndex + 1) % priorities.length
+        setSelectedPriority(priorities[nextIndex])
+    }
+
+    const cycleSortBy = () => {
+        const sortOptions = ['sortOrder', 'priority', 'created']
+        const currentIndex = sortOptions.indexOf(sortBy)
+        const nextIndex = (currentIndex + 1) % sortOptions.length
+        setSortBy(sortOptions[nextIndex])
+    }
+
+    const getCategoryLabel = () => {
+        if (selectedCategory === 'all') return 'All'
+        return CATEGORIES[selectedCategory]?.name || 'All'
+    }
+
+    const getPriorityLabel = () => {
+        if (selectedPriority === 'all') return 'All'
+        return PRIORITIES[selectedPriority]?.name || 'All'
+    }
+
+    const getSortByLabel = () => {
+        if (sortBy === 'sortOrder') return 'Custom Order'
+        if (sortBy === 'priority') return 'Priority'
+        if (sortBy === 'created') return 'Date Created'
+        return 'Custom Order'
+    }
+
     return (
         <div className="kanban-hitlist">
             {/* Filters and Sorting */}
             <div className="kanban-filters">
                 <div className="filter-group">
                     <label>Category:</label>
-                    <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                        <option value="all">All</option>
-                        {Object.entries(CATEGORIES).map(([key, cat]) => (
-                            <option key={key} value={key}>{cat.name}</option>
-                        ))}
-                    </select>
+                    <button className="filter-cycle-btn" onClick={cycleCategory}>
+                        {getCategoryLabel()}
+                    </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Priority:</label>
-                    <select value={selectedPriority} onChange={(e) => setSelectedPriority(e.target.value)}>
-                        <option value="all">All</option>
-                        {Object.entries(PRIORITIES).map(([key, pri]) => (
-                            <option key={key} value={key}>{pri.name}</option>
-                        ))}
-                    </select>
+                    <button className="filter-cycle-btn" onClick={cyclePriority}>
+                        {getPriorityLabel()}
+                    </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Sort by:</label>
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="sortOrder">Custom Order</option>
-                        <option value="priority">Priority</option>
-                        <option value="created">Date Created</option>
-                    </select>
+                    <button className="filter-cycle-btn" onClick={cycleSortBy}>
+                        {getSortByLabel()}
+                    </button>
                 </div>
 
                 {/* Quick Add */}

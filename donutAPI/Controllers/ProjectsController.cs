@@ -170,7 +170,7 @@ namespace DonutAPI.Controllers
                 ArtistName = createProjectDto.ArtistName,
                 Description = createProjectDto.Description,
                 CreatedById = user.Id,
-                Status = ProjectStatus.Active
+                Status = ProjectStatus.Doing
             };
 
             _context.Projects.Add(project);

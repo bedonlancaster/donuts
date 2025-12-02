@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import KanbanHitList from '../HitList/KanbanHitList'
+import ProjectHeader from '../ProjectHeader/ProjectHeader'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './TrackDetail.css'
 
@@ -71,6 +72,64 @@ function TrackDetail({ user, onLogout }) {
             alert('Error deleting track.');
         }
     };
+
+    const handleUpdateTrackStatus = async () => {
+        if (!track) return
+
+        const newStatus = track.status === 1 ? 2 : 1
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            })
+
+            if (response.ok) {
+                setTrack({ ...track, status: newStatus })
+            } else {
+                console.error('Failed to update track status:', response.status)
+            }
+        } catch (error) {
+            console.error('Error updating track status:', error)
+        }
+    }
+
+    const handleUpdateProjectStatus = async () => {
+        if (!project) return
+
+        const newStatus = project.status === 1 ? 2 : 1
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: project.title,
+                    artistName: project.artistName,
+                    description: project.description,
+                    status: newStatus
+                })
+            })
+
+            if (response.ok) {
+                setProject({ ...project, status: newStatus })
+            } else {
+                console.error('Failed to update project status:', response.status)
+            }
+        } catch (error) {
+            console.error('Error updating project status:', error)
+        }
+    }
+
     const { projectId, trackId } = useParams()
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
@@ -87,12 +146,6 @@ function TrackDetail({ user, onLogout }) {
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'hitlist')
 
-    // Debug logging
-    console.log('TrackDetail component mounted')
-    console.log('Project ID from URL:', projectId)
-    console.log('Track ID from URL:', trackId)
-    console.log('Current theme:', currentTheme)
-
     // Theme is set by ThemeLoader; no need to set theme here
 
     // Palette mapping is now centralized in themeUtils
@@ -107,7 +160,6 @@ function TrackDetail({ user, onLogout }) {
                 } else {
                     setIsNavigating(true)
                 }
-                console.log('Fetching track with ID:', trackId)
 
                 const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
                     method: 'GET',
@@ -119,7 +171,6 @@ function TrackDetail({ user, onLogout }) {
 
                 if (response.ok) {
                     const trackData = await response.json()
-                    console.log('Track data:', trackData)
                     setTrack(trackData)
 
                     // Only update project if it's not already set or if it's a different project
@@ -144,11 +195,6 @@ function TrackDetail({ user, onLogout }) {
                                 setAllTracks(tracks)
                                 const index = tracks.findIndex(t => t.id === parseInt(trackId))
                                 setCurrentTrackIndex(index)
-                                console.log('Track navigation setup:', {
-                                    totalTracks: tracks.length,
-                                    currentIndex: index,
-                                    tracks: tracks.map(t => ({ id: t.id, title: t.title, orderIndex: t.orderIndex }))
-                                })
                             }
                         }
                     } else if (allTracks.length > 0) {
@@ -207,13 +253,11 @@ function TrackDetail({ user, onLogout }) {
             if (project && project.tracks && project.tracks.length > 0) {
                 const trackList = project.tracks
                 playTrack(track, trackList)
-                console.log('Playing track with project playlist:', trackList.map(t => t.title))
             } else {
                 // Fallback: fetch project tracks to get full playlist
                 fetchProjectTracks().then(tracks => {
                     if (tracks && tracks.length > 0) {
                         playTrack(track, tracks)
-                        console.log('Playing track with fetched playlist:', tracks.map(t => t.title))
                     } else {
                         playTrack(track) // Play just this track if no playlist available
                     }
@@ -261,9 +305,51 @@ function TrackDetail({ user, onLogout }) {
 
     const formatDuration = (duration) => {
         if (!duration) return '--:--'
-        const minutes = Math.floor(duration / 60)
-        const seconds = duration % 60
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+
+        // Handle different duration formats from the API
+
+        // If duration is already a number (seconds), use it directly
+        if (typeof duration === 'number') {
+            const minutes = Math.floor(duration / 60)
+            const seconds = Math.floor(duration % 60)
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`
+        }
+
+        // If duration is a string (TimeSpan format from C#), parse it
+        if (typeof duration === 'string') {
+            // Handle TimeSpan format: "00:04:14" or "00:04:14.5000000"
+            const timeParts = duration.split(':')
+            if (timeParts.length >= 2) {
+                const hours = parseInt(timeParts[0], 10) || 0
+                const minutes = parseInt(timeParts[1], 10) || 0
+                const secondsParts = timeParts[2] ? timeParts[2].split('.')[0] : '0'
+                const seconds = parseInt(secondsParts, 10) || 0
+
+                const totalMinutes = hours * 60 + minutes
+                return `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+            }
+
+            // Handle ISO 8601 duration format: "PT4M14S"
+            const iso8601Match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/)
+            if (iso8601Match) {
+                const hours = parseInt(iso8601Match[1], 10) || 0
+                const minutes = parseInt(iso8601Match[2], 10) || 0
+                const seconds = Math.floor(parseFloat(iso8601Match[3]) || 0)
+
+                const totalMinutes = hours * 60 + minutes
+                return `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+            }
+        }
+
+        // If duration is an object (some JSON serialization formats)
+        if (typeof duration === 'object' && duration !== null) {
+            const totalSeconds = (duration.hours || 0) * 3600 + (duration.minutes || 0) * 60 + (duration.seconds || 0)
+            const minutes = Math.floor(totalSeconds / 60)
+            const seconds = Math.floor(totalSeconds % 60)
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`
+        }
+
+        return '--:--'
     }
 
     if (loading) {
@@ -305,79 +391,56 @@ function TrackDetail({ user, onLogout }) {
 
     return (
         <div className="track-detail" style={{ opacity: isNavigating ? 0.6 : 1, transition: 'opacity 0.15s ease' }}>
-            {/* Header - Same structure as ProjectDetail */}
-            <div className="project-header">
-                <button
-                    className="back-btn"
-                    onClick={() => navigate(`/project/${projectId}`)}
-                >
-                    ←
-                </button>
-
-                <div className="project-info">
-                    <div className="project-artwork">
-                        <img
-                            src={project.artworkUrl ? `http://localhost:5000${project.artworkUrl}` : donutLogo}
-                            alt={project.title}
-                            className="artwork-image"
-                        />
-                    </div>
-
-                    <div className="project-details">
-                        <h1 className="project-title">{project.title}</h1>
-                        {project.artistName && (
-                            <p className="project-artist">by {project.artistName}</p>
+            {/* Header - Using shared ProjectHeader component */}
+            <ProjectHeader
+                project={project}
+                onStatusUpdate={handleUpdateProjectStatus}
+                onBack={() => navigate(`/project/${projectId}`)}
+                activeTheme={currentTheme}
+            >
+                {/* Track-specific tabs */}
+                <div className="project-tabs-inline">
+                    <button
+                        className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('details')}
+                        style={{
+                            color: activeTab === 'details' ? 'var(--theme-primary)' : 'var(--theme-text)',
+                            borderBottom: activeTab === 'details' ? '2px solid var(--theme-primary)' : 'none'
+                        }}
+                    >
+                        Track Details
+                    </button>
+                    <button
+                        className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('hitlist')}
+                        style={{
+                            color: activeTab === 'hitlist' ? 'var(--theme-primary)' : 'var(--theme-text)',
+                            borderBottom: activeTab === 'hitlist' ? '2px solid var(--theme-primary)' : 'none'
+                        }}
+                    >
+                        Hit List
+                        {track.hitListItems && track.hitListItems.length > 0 && (
+                            <span className="tab-badge">({track.hitListItems.length})</span>
                         )}
-                        <p className="project-description">{project.description}</p>
-                        <div className="project-status">Status: {project.status}</div>
-                    </div>
+                    </button>
                 </div>
 
-                <div className="header-actions">
-                    {/* Tabs Navigation - moved into header */}
-                    <div className="project-tabs-inline">
-                        <button
-                            className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('details')}
-                            style={{
-                                color: activeTab === 'details' ? 'var(--theme-primary)' : 'var(--theme-text)',
-                                borderBottom: activeTab === 'details' ? '2px solid var(--theme-primary)' : 'none'
-                            }}
-                        >
-                            Track Details
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'hitlist' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('hitlist')}
-                            style={{
-                                color: activeTab === 'hitlist' ? 'var(--theme-primary)' : 'var(--theme-text)',
-                                borderBottom: activeTab === 'hitlist' ? '2px solid var(--theme-primary)' : 'none'
-                            }}
-                        >
-                            Hit List
-                            {track.hitListItems && track.hitListItems.length > 0 && (
-                                <span className="tab-badge">({track.hitListItems.length})</span>
-                            )}
-                        </button>
+                <div className="user-profile">
+                    <div className="profile-avatar">
+                        {user.displayName.charAt(0).toUpperCase()}
                     </div>
-
-                    <div className="user-profile">
-                        <div className="profile-avatar">
-                            {user.displayName.charAt(0).toUpperCase()}
+                    <div className="profile-info">
+                        <div className="profile-name">{user.displayName}</div>
+                        <div className="profile-role">
+                            {user.isProducer && user.isArtist ? 'Producer & Artist' :
+                                user.isProducer ? 'Producer' : 'Artist'}
                         </div>
-                        <div className="profile-info">
-                            <div className="profile-name">{user.displayName}</div>
-                            <div className="profile-role">
-                                {user.isProducer && user.isArtist ? 'Producer & Artist' :
-                                    user.isProducer ? 'Producer' : 'Artist'}
-                            </div>
-                        </div>
-                        <button className="logout-btn" onClick={handleLogout}>
-                            Logout
-                        </button>
                     </div>
+                    <button className="logout-btn" onClick={handleLogout}>
+                        Logout
+                    </button>
                 </div>
-            </div>
+            </ProjectHeader>
 
             {/* Tab Content */}
             <div className="tab-content">
@@ -425,7 +488,14 @@ function TrackDetail({ user, onLogout }) {
 
                             <div className="detail-item">
                                 <label>Status</label>
-                                <span className="status-badge">{track.status}</span>
+                                <span
+                                    className="status-badge"
+                                    onClick={handleUpdateTrackStatus}
+                                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                                    title="Click to toggle status"
+                                >
+                                    {track.status === 1 ? 'Doing' : track.status === 2 ? 'Done' : track.status}
+                                </span>
                             </div>
 
                             <div className="detail-item">
@@ -455,8 +525,8 @@ function TrackDetail({ user, onLogout }) {
                 {activeTab === 'hitlist' && (
                     <div className="hitlist-section">
                         <div className="section-header">
-                            <h2>Track Hit List</h2>
-                            <p>Create a to-do list to get things done</p>
+                            <h2>{track.title}</h2>
+                            <p>Create a Hit List to get things DONE</p>
                         </div>
                         <KanbanHitList
                             trackId={trackId}
