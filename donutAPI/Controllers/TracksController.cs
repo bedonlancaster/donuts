@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using DonutAPI.Data;
 using DonutAPI.Models;
 using DonutAPI.DTOs;
+using DonutAPI.Services;
 
 namespace DonutAPI.Controllers
 {
@@ -16,12 +17,18 @@ namespace DonutAPI.Controllers
         private readonly DonutDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IAudioMetadataService _audioMetadataService;
 
-        public TracksController(DonutDbContext context, UserManager<User> userManager, IWebHostEnvironment webHostEnvironment)
+        public TracksController(
+            DonutDbContext context,
+            UserManager<User> userManager,
+            IWebHostEnvironment webHostEnvironment,
+            IAudioMetadataService audioMetadataService)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
+            _audioMetadataService = audioMetadataService;
         }
 
         // GET: api/tracks/project/5
@@ -206,8 +213,8 @@ namespace DonutAPI.Controllers
                 // Update track with file info
                 track.FileUrl = $"/uploads/tracks/{fileName}";
 
-                // TODO: Extract duration using audio analysis library
-                // For now, we'll leave duration as null
+                // Extract duration from the audio file
+                track.Duration = _audioMetadataService.ExtractDuration(filePath);
 
                 await _context.SaveChangesAsync();
 
@@ -342,8 +349,8 @@ namespace DonutAPI.Controllers
             track.FileUrl = $"/uploads/tracks/{fileName}";
             track.FileType = fileExtension.TrimStart('.');
 
-            // TODO: Extract duration using audio analysis library (e.g., MediaInfo.NET)
-            // For now, we'll leave duration as null
+            // Extract duration from the audio file
+            track.Duration = _audioMetadataService.ExtractDuration(filePath);
 
             await _context.SaveChangesAsync();
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
@@ -116,6 +116,12 @@ function ProjectDetail({ user, onLogout }) {
                 if (response.ok) {
                     const projectData = await response.json()
                     console.log('Project data:', projectData)
+                    console.log('Project tracks:', projectData.tracks)
+                    console.log('Total duration:', projectData.totalDuration)
+                    // Log each track's duration
+                    projectData.tracks?.forEach((track, index) => {
+                        console.log(`Track ${index + 1}: ${track.title} - Duration:`, track.duration, typeof track.duration)
+                    })
                     setProject(projectData)
                 } else if (response.status === 404) {
                     setError('Project not found')
@@ -166,33 +172,32 @@ function ProjectDetail({ user, onLogout }) {
         }
     }
 
-    // Drag and drop handlers
-    const handleDragStart = (e, track, index) => {
-        console.log('Drag start:', track.title, index)
+    // Drag and drop handlers - memoized to prevent re-creation
+    const handleDragStart = useCallback((e, track, index) => {
+        console.log('🔵 Drag start:', track.title, index)
         setDraggedTrack({ track, index })
         e.dataTransfer.effectAllowed = 'move'
-        e.dataTransfer.setData('text/html', e.target.outerHTML)
-        e.target.style.opacity = '0.5'
-    }
+    }, [])
 
-    const handleDragEnd = (e) => {
-        console.log('Drag end')
-        e.target.style.opacity = '1'
+    const handleDragEnd = useCallback((e) => {
+        console.log('🔴 Drag end')
         setDraggedTrack(null)
         setDragOverIndex(null)
-    }
+    }, [])
 
-    const handleDragOver = (e, index) => {
-        console.log('Drag over:', index)
+    const handleDragOver = useCallback((e, index) => {
         e.preventDefault()
         e.dataTransfer.dropEffect = 'move'
-        setDragOverIndex(index)
-    }
+        setDragOverIndex(prevIndex => prevIndex === index ? prevIndex : index)
+    }, [])
 
-    const handleDragLeave = () => {
-        console.log('Drag leave')
+    const handleDragLeave = useCallback((e) => {
+        // Only clear if we're actually leaving the track item
+        if (e.currentTarget.contains(e.relatedTarget)) {
+            return
+        }
         setDragOverIndex(null)
-    }
+    }, [])
 
     const handleDrop = async (e, dropIndex) => {
         console.log('Drop at index:', dropIndex)
@@ -484,7 +489,14 @@ function ProjectDetail({ user, onLogout }) {
                 {activeTab === 'tracks' && (
                     <div className="tracks-section">
                         <div className="section-header">
-                            <h2>Tracks</h2>
+                            <div className="section-title-group">
+                                {/* <h2>Tracks</h2> */}
+                                {project.totalDuration && (
+                                    <span className="total-duration">
+                                        {formatDuration(project.totalDuration)} total
+                                    </span>
+                                )}
+                            </div>
                             <button
                                 className="add-btn"
                                 onClick={() => navigate(`/project/${projectId}/upload-track`)}
@@ -499,6 +511,9 @@ function ProjectDetail({ user, onLogout }) {
                                     <div
                                         key={track.id}
                                         className={`track-item ${dragOverIndex === index ? 'drag-over' : ''} ${draggedTrack?.index === index ? 'dragging' : ''}`}
+                                        draggable="true"
+                                        onDragStart={(e) => handleDragStart(e, track, index)}
+                                        onDragEnd={handleDragEnd}
                                         onDragOver={(e) => handleDragOver(e, index)}
                                         onDragLeave={handleDragLeave}
                                         onDrop={(e) => handleDrop(e, index)}
@@ -512,7 +527,7 @@ function ProjectDetail({ user, onLogout }) {
                                             >
                                                 {track.title}
                                             </h4>
-                                            <p>{project.artistName || track.uploadedBy.displayName}</p>
+                                            <p className="track-artist">{project.artistName || track.uploadedBy.displayName}</p>
                                         </div>
                                         <div className="track-duration">
                                             {track.duration ? formatDuration(track.duration) : '--:--'}
@@ -520,27 +535,22 @@ function ProjectDetail({ user, onLogout }) {
                                         <div className="track-actions">
                                             <button
                                                 className="play-btn"
-                                                onClick={() => handlePlayTrack(track)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handlePlayTrack(track)
+                                                }}
+                                                onMouseDown={(e) => e.stopPropagation()}
                                                 title={currentTrack && currentTrack.id === track.id && isPlaying ? 'Pause' : 'Play'}
                                             >
                                                 {currentTrack && currentTrack.id === track.id && isPlaying ? '⏸' : '▶'}
                                             </button>
-                                            <button className="more-btn">⋯</button>
+                                            <button
+                                                className="more-btn"
+                                                onMouseDown={(e) => e.stopPropagation()}
+                                            >⋯</button>
                                             <div
                                                 className="drag-handle"
                                                 title="Drag to reorder"
-                                                draggable="true"
-                                                onDragStart={(e) => handleDragStart(e, track, index)}
-                                                onDragEnd={handleDragEnd}
-                                                onMouseDown={() => console.log('Mouse down on drag handle')}
-                                                onClick={() => console.log('Click on drag handle')}
-                                                role="button"
-                                                tabIndex={0}
-                                                style={{
-                                                    cursor: 'grab',
-                                                    userSelect: 'none',
-                                                    WebkitUserDrag: 'element'
-                                                }}
                                             >
                                                 ⋮⋮
                                             </div>
@@ -695,6 +705,44 @@ function ProjectDetail({ user, onLogout }) {
                             </div>
 
                             <div className="setting-group">
+                                <h4>Maintenance</h4>
+                                <p style={{ marginBottom: '1rem' }}>
+                                    Update track durations for all tracks in this project.
+                                </p>
+                                <button
+                                    className="update-durations-btn"
+                                    onClick={async () => {
+                                        try {
+                                            const response = await fetch('http://localhost:5000/api/maintenance/update-track-durations', {
+                                                method: 'POST',
+                                                credentials: 'include',
+                                                headers: { 'Content-Type': 'application/json' }
+                                            })
+                                            const result = await response.json()
+                                            console.log('Duration update result:', result)
+                                            alert(`Updated ${result.updated} tracks, ${result.failed} failed`)
+                                            // Refresh the page to see updated durations
+                                            window.location.reload()
+                                        } catch (error) {
+                                            console.error('Error updating durations:', error)
+                                            alert('Failed to update durations')
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor: activeTheme.primary,
+                                        color: activeTheme.text,
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Update Track Durations
+                                </button>
+                            </div>
+
+                            <div className="setting-group">
                                 <h4>Danger Zone</h4>
                                 <p style={{ marginBottom: '1rem', color: '#e74c3c' }}>
                                     Deleting this project will permanently remove all tracks, collaborators, and data. This action cannot be undone.
@@ -787,10 +835,54 @@ function ProjectDetail({ user, onLogout }) {
 
 // Helper function to format duration
 const formatDuration = (duration) => {
-    // Assuming duration is in seconds or a time format
-    const minutes = Math.floor(duration / 60)
-    const seconds = duration % 60
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    console.log('formatDuration called with:', duration, 'Type:', typeof duration)
+
+    if (!duration) return '--:--'
+
+    // Handle different duration formats from the API
+
+    // If duration is already a number (seconds), use it directly
+    if (typeof duration === 'number') {
+        const minutes = Math.floor(duration / 60)
+        const seconds = Math.floor(duration % 60)
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    // If duration is a string (TimeSpan format from C#), parse it
+    if (typeof duration === 'string') {
+        // Handle TimeSpan format: "00:04:14" or "00:04:14.5000000"
+        const timeParts = duration.split(':')
+        if (timeParts.length >= 2) {
+            const hours = parseInt(timeParts[0], 10) || 0
+            const minutes = parseInt(timeParts[1], 10) || 0
+            const secondsParts = timeParts[2] ? timeParts[2].split('.')[0] : '0'
+            const seconds = parseInt(secondsParts, 10) || 0
+
+            const totalMinutes = hours * 60 + minutes
+            return `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+        }
+
+        // Handle ISO 8601 duration format: "PT4M14S"
+        const iso8601Match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/)
+        if (iso8601Match) {
+            const hours = parseInt(iso8601Match[1], 10) || 0
+            const minutes = parseInt(iso8601Match[2], 10) || 0
+            const seconds = Math.floor(parseFloat(iso8601Match[3]) || 0)
+
+            const totalMinutes = hours * 60 + minutes
+            return `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+        }
+    }
+
+    // If duration is an object (some JSON serialization formats)
+    if (typeof duration === 'object' && duration !== null) {
+        const totalSeconds = (duration.hours || 0) * 3600 + (duration.minutes || 0) * 60 + (duration.seconds || 0)
+        const minutes = Math.floor(totalSeconds / 60)
+        const seconds = Math.floor(totalSeconds % 60)
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    return '--:--'
 }
 
 export default ProjectDetail

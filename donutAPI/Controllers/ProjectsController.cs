@@ -77,7 +77,8 @@ namespace DonutAPI.Controllers
                     UploadedBy = t.UploadedBy.ToUserDto()
                 }).ToList(),
                 TrackCount = p.Tracks.Count,
-                HitListItemCount = p.HitListItems.Count
+                HitListItemCount = p.HitListItems.Count,
+                TotalDuration = CalculateTotalDuration(p.Tracks)
             }));
         }
 
@@ -149,7 +150,8 @@ namespace DonutAPI.Controllers
                         UploadedBy = t.UploadedBy.ToUserDto()
                     }).ToList(),
                 TrackCount = project.Tracks.Count,
-                HitListItemCount = project.HitListItems.Count
+                HitListItemCount = project.HitListItems.Count,
+                TotalDuration = CalculateTotalDuration(project.Tracks)
             };
 
             return Ok(projectDto);
@@ -678,6 +680,22 @@ namespace DonutAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Track order updated successfully" });
+        }
+
+        // Helper method to calculate total duration from a collection of tracks
+        private static TimeSpan? CalculateTotalDuration(IEnumerable<Track> tracks)
+        {
+            var trackDurations = tracks
+                .Where(t => t.Duration.HasValue)
+                .Select(t => t.Duration!.Value)
+                .ToList();
+
+            if (trackDurations.Count == 0)
+            {
+                return null;
+            }
+
+            return trackDurations.Aggregate(TimeSpan.Zero, (sum, duration) => sum + duration);
         }
     }
 }

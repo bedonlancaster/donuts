@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
 using DonutAPI.Data;
 using DonutAPI.Models;
+using DonutAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddDbContext<DonutDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register custom services
+builder.Services.AddScoped<IAudioMetadataService, AudioMetadataService>();
 
 // Add Identity services
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>

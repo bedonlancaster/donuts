@@ -101,6 +101,7 @@ namespace DonutAPI.DTOs
         public List<TrackDto> Tracks { get; set; } = new();
         public int TrackCount { get; set; }
         public int HitListItemCount { get; set; }
+        public TimeSpan? TotalDuration { get; set; }
 
         // Helper properties for easy frontend access
         public List<UserDto> Producers =>
