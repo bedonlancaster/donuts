@@ -524,7 +524,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                             <button
                                 type="button"
                                 className="theme-cycle-btn"
-                                onClick={cycleToNextTheme}
+                                onClick={cyclePalette}
                                 disabled={isLoading}
                                 title={`Current: ${formData.theme.palette} • Click to cycle themes`}
                                 style={{
