@@ -1,36 +1,35 @@
-# DONUTS 🍩
+# DONUTS 
 
-**Music Producer's One-Stop Collaboration Platform**
+**A Musical Artist and Producer's One-Stop Collaboration Platform**
 
-A full-stack web application that revolutionizes how music producers and artists collaborate on projects. DONUTS provides an intuitive platform for sharing mixes, scheduling sessions, and managing project workflows - all with a delightful donut-themed interface.
+A full-stack web application that revolutionizes how music producers and artists collaborate on projects. DONUTS provides an intuitive platform for sharing mixes, creating actionable tickets for note-taking, and managing project workflows - all with a streamlined aesthetic and interface that is customizable per-project.
 
-## 🎯 Problem Solved
+## Problem Solved
 
-Music producers and artists need a streamlined way to:
-- Share and collaborate on musical projects ("donuts" 🎵)
-- Upload and manage track versions with client feedback
-- Schedule recording sessions efficiently
-- Track project progress with organized hit lists
-- Visualize album artwork and track ordering
+I am a music producer/artist who, like many others, need a better way to share and listen to mixes for the albums I am working on with people. Most of all, I desperately need an application that takes the clunky nature of note-taking/ project management, and builds a boutique interface that is specifically designed for both artists and producers. Working on a record can feel incredibly overwhelming to all parties involved, and it can even feel like you are standing in a field of tall grass, randomly hacking to find your way out. DONUTS helps you undertand the task at hand, so you can focus, put your head down, and simply mow the grass, one actionable step at a time. 
 
-## 🎵 Key Features
+I have been using it on my new album that I am tracking, producing, and mixing myself, and I have found it already to be a complete life-saver. I plan to continue working on this platform, so I can share it with other artists and producers. Hopefully, if I find this incredibly useful, others will too, and at the end of the day, more records could be created and released into the world during our lifetime. That is the dream. 
+
+I believe this platform has an deep opportunity for continuous iteration and growth. 
+
+## Key Features
 
 ### MVP Features
-- **🔐 User Authentication** - Separate producer and artist accounts
-- **🍩 Project Management** - Create and manage musical projects (donuts)
-- **🎧 Track Upload & Management** - Audio file handling with version control
-- **📝 Hit List System** - Task management for each track and project
-- **📅 Session Booking** - Artists can schedule sessions with producers
-- **🎨 Customizable Themes** - Artists can personalize project colors
-- **↕️ Drag & Drop Ordering** - Intuitive track arrangement
+- **User Authentication** - Separate producer and artist accounts
+- **Project Management** - Create and manage musical projects (donuts)
+- **Track Upload & Management** - Audio file handling with version control
+- **Hit List System** - Task management for each track and project
+- **Customizable Themes** - Artists can personalize project colors
+- **Drag & Drop Ordering** - Intuitive track arrangement
+- **Audio Player** - In-browser playback that persists between navigations
 
 ### Stretch Goals
-- **📊 Project-Wide Hit Lists** - Global task management across tracks
-- **🔔 Real-time Notifications** - Live updates for collaborators
-- **📈 Analytics Dashboard** - Project progress tracking
-- **🎤 Audio Preview** - In-browser track playback
+- **Real-time Notifications** - Live updates for collaborators
+- **Analytics Dashboard** - Project progress tracking
+- **Scheduling platform Integration**
+- **Large File Sharing Integration**
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **C#/.NET 8** - Robust API development
@@ -50,10 +49,8 @@ Music producers and artists need a streamlined way to:
 - **Git/GitHub** - Version control
 - **Localhost Development** - Initial deployment target
 
-## 📊 Database Design
+## Database Design
 
-### Entity Relationship Diagram
-**[View Interactive ERD →](https://dbdiagram.io/d/68e9308dd2b621e4224757d1)**
 
 Key relationships:
 - **Users ↔ Projects** (Many-to-Many via ProjectCollaborators)
@@ -62,69 +59,9 @@ Key relationships:
 - **Projects → Tracks** (One-to-Many)
 - **Tracks → HitListItems** (One-to-Many)
 
-## 🎨 User Experience
 
-### Interactive Wireframes
-**[View Live Demo →](./DONUTS_wireframes.html)**
 
-The wireframe demo showcases:
-- Complete user authentication flow
-- Producer and artist dashboard experiences
-- Project creation and collaboration workflows
-- Track management and hit list functionality
-- Session booking interface
-- Mobile-responsive design patterns
-
-## 👥 User Stories
-
-### Core MVP Stories
-
-**As a Producer:**
-- I can register and create a producer account
-- I can create new projects and invite artists to collaborate
-- I can upload tracks to projects and organize them
-- I can manage hit lists for tracks and overall projects
-- I can accept session bookings from artists
-
-**As an Artist:**
-- I can register and create an artist account  
-- I can collaborate on projects I'm invited to
-- I can customize project themes and colors (donut aesthetics)
-- I can reorder tracks within projects
-- I can add/edit/delete hit list items for tracks
-- I can book recording sessions with producers
-
-### Authentication & Authorization
-- Only authenticated users can access the application
-- Users can only edit their own data and shared projects
-- Role-based permissions via collaboration relationships
-
-## 🏗️ Project Structure
-
-```
-donuts/
-├── donutAPI/              # C#/.NET Backend API
-│   ├── Controllers/       # API endpoints
-│   ├── Models/           # Entity Framework models
-│   ├── Data/             # Database context & migrations
-│   ├── Services/         # Business logic
-│   └── Program.cs        # Application entry point
-├── donutClient/          # React Frontend
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Route-based page components
-│   │   ├── services/     # API integration
-│   │   └── App.js        # Main application component
-│   └── public/           # Static assets
-├── docs/                 # Documentation & design files
-│   ├── DONUTS_ERD.md    # Database design documentation
-│   ├── DONUTS_Wireframes.md # UI/UX design specifications
-│   ├── DONUTS_DataModels.md # C# model implementations
-│   └── DONUTS_dbdiagram.dbml # Database diagram source
-└── README.md            # This file
-```
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - **.NET 8 SDK** - [Download here](https://dotnet.microsoft.com/download)
@@ -139,7 +76,7 @@ dotnet restore
 dotnet ef database update
 dotnet run
 ```
-API will be available at `https://localhost:7001`
+API will be available at `https://localhost:5000`
 
 ### Frontend Setup (donutClient)  
 ```bash
@@ -149,47 +86,14 @@ npm start
 ```
 React app will be available at `http://localhost:3000`
 
-## 📋 Development Roadmap
-
-### Phase 1: Core MVP ✅
-- [x] Database design & ERD
-- [x] Wireframes & user experience design
-- [x] Project documentation & repository setup
-- [ ] Backend API development
-- [ ] Frontend React application
-- [ ] User authentication system
-- [ ] Basic CRUD operations
-
-### Phase 2: Enhanced Features
-- [ ] File upload functionality
-- [ ] Real-time collaboration
-- [ ] Session scheduling system
-- [ ] Advanced UI/UX polish
-
-### Phase 3: Production Ready
-- [ ] Deployment pipeline
-- [ ] Performance optimization
-- [ ] Security hardening
-- [ ] User testing & feedback
-
-## 🎨 Design Philosophy
-
-**DONUTS** embraces a playful yet professional approach to music collaboration:
-
-- **🍩 Donut Metaphor** - Projects are "donuts" (like vinyl records), creating an engaging visual identity
-- **🎨 Artist Empowerment** - Artists can customize project aesthetics and contribute creatively
-- **📱 Mobile-First** - Responsive design ensures accessibility across all devices
-- **⚡ Intuitive Workflow** - Streamlined processes that don't interrupt creative flow
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+## Contributing
 
-This is a capstone project, but feedback and suggestions are welcome! Please open an issue to discuss any changes.
+If you happen to be interested in this platform, reach out to me via email bedonlancaster@gmail.com
 
 ---
 
-**Built with ❤️ for the music community**  
-*Making collaboration as sweet as donuts* 🍩🎵
+Make Records. DONUTS. 
