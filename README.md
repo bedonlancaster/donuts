@@ -10,7 +10,7 @@ I am a music producer/artist who, like many others, need a better way to share a
 
 I have been using it on my new album that I am tracking, producing, and mixing myself, and I have found it already to be a complete life-saver. I plan to continue working on this platform, so I can share it with other artists and producers. Hopefully, if I find this incredibly useful, others will too, and at the end of the day, more records could be created and released into the world during our lifetime. That is the dream. 
 
-I believe this platform has an deep opportunity for continuous iteration and growth. 
+I believe this platform has a deep opportunity for continuous iteration and growth. 
 
 ## Key Features
 
