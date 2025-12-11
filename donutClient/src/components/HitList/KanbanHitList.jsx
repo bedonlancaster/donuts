@@ -5,7 +5,6 @@ import './KanbanHitList.css'
 // Category constants - no emojis, use theme colors
 const CATEGORIES = {
     0: { name: 'General' },
-    1: { name: 'Tracking' },
     2: { name: 'Production' },
     3: { name: 'Mixing' },
     4: { name: 'Mastering' },
@@ -21,9 +20,27 @@ const PRIORITIES = {
 }
 
 // Card Component
-function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddBulletPoint, onUpdateBulletPoint, onRemoveBulletPoint, focusKey, setFocusKey, updateItemField }) {
+function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddBulletPoint, onUpdateBulletPoint, onRemoveBulletPoint, focusKey, setFocusKey, updateItemField, onOpenComments }) {
+    const [showCategoryDropdown, setShowCategoryDropdown] = React.useState(false)
+    const dropdownRef = React.useRef(null)
     const category = CATEGORIES[item.category] || CATEGORIES[0]
     const priority = PRIORITIES[item.priority] || PRIORITIES[2]
+
+    // Close dropdown when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowCategoryDropdown(false)
+            }
+        }
+
+        if (showCategoryDropdown) {
+            document.addEventListener('mousedown', handleClickOutside)
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside)
+            }
+        }
+    }, [showCategoryDropdown])
 
     return (
         <div className="kanban-card">
@@ -134,7 +151,7 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
                     </div>
                 </div>
             ) : (
-                <div className="card-display-mode">
+                <div className="card-display-mode" onClick={() => onOpenComments(item)}>
                     <h4 className="card-title">{item.subject}</h4>
 
                     {item.bulletPoints.filter(b => b.trim()).length > 0 && (
@@ -147,20 +164,37 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
 
                     <div className="card-footer">
                         <div className="card-badges">
-                            <span
-                                className="category-badge clickable"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    const categories = Object.keys(CATEGORIES).map(k => parseInt(k))
-                                    const currentIndex = categories.indexOf(item.category)
-                                    const nextIndex = (currentIndex + 1) % categories.length
-                                    onUpdateItem(item.id, 'category', categories[nextIndex])
-                                    updateItemField(item.id, 'category', categories[nextIndex])
-                                }}
-                                title="Click to change category"
-                            >
-                                {category.name}
-                            </span>
+                            <div className="category-badge-wrapper" ref={dropdownRef}>
+                                <span
+                                    className="category-badge clickable"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowCategoryDropdown(!showCategoryDropdown)
+                                    }}
+                                    title="Click to change category"
+                                >
+                                    {category.name}
+                                </span>
+                                {showCategoryDropdown && (
+                                    <div className="category-dropdown">
+                                        {Object.entries(CATEGORIES).map(([key, cat]) => (
+                                            <div
+                                                key={key}
+                                                className={`category-option ${parseInt(key) === item.category ? 'active' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    const newCategory = parseInt(key)
+                                                    onUpdateItem(item.id, 'category', newCategory)
+                                                    updateItemField(item.id, 'category', newCategory)
+                                                    setShowCategoryDropdown(false)
+                                                }}
+                                            >
+                                                {cat.name}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <span
                                 className={`priority-badge priority-${priority.level} clickable`}
                                 onClick={(e) => {
@@ -213,6 +247,111 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
     )
 }
 
+// Comments Modal Component
+function CommentsModal({ item, onClose }) {
+    const [comments, setComments] = useState([])
+    const [newComment, setNewComment] = useState('')
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        // TODO: Fetch comments from backend
+        // For now, using mock data
+        setIsLoading(false)
+        setComments([])
+    }, [item.id])
+
+    const handleAddComment = async () => {
+        if (!newComment.trim()) return
+
+        // TODO: POST comment to backend
+        const comment = {
+            id: Date.now(),
+            text: newComment,
+            author: 'Current User', // TODO: Get from auth context
+            timestamp: new Date().toISOString()
+        }
+
+        setComments([...comments, comment])
+        setNewComment('')
+    }
+
+    const category = CATEGORIES[item.category] || CATEGORIES[0]
+    const priority = PRIORITIES[item.priority] || PRIORITIES[2]
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <div className="modal-title-section">
+                        <h2>{item.subject}</h2>
+                        <div className="modal-badges">
+                            <span className="category-badge-small">{category.name}</span>
+                            <span className={`priority-badge priority-${priority.level}`}>{priority.name}</span>
+                        </div>
+                    </div>
+                    <button className="modal-close-btn" onClick={onClose}>×</button>
+                </div>
+
+                <div className="modal-body">
+                    {item.bulletPoints.filter(b => b.trim()).length > 0 && (
+                        <div className="modal-description">
+                            <h3>Details</h3>
+                            <ul className="bullet-list">
+                                {item.bulletPoints.filter(b => b.trim()).map((bullet, index) => (
+                                    <li key={index}>{bullet}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className="modal-comments">
+                        <h3>Comments ({comments.length})</h3>
+
+                        <div className="comments-list">
+                            {comments.length === 0 ? (
+                                <p className="no-comments">No comments yet. Be the first to comment!</p>
+                            ) : (
+                                comments.map(comment => (
+                                    <div key={comment.id} className="comment">
+                                        <div className="comment-header">
+                                            <strong>{comment.author}</strong>
+                                            <span className="comment-time">
+                                                {new Date(comment.timestamp).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className="comment-text">{comment.text}</p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="add-comment">
+                            <textarea
+                                placeholder="Add a comment..."
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                        e.preventDefault()
+                                        handleAddComment()
+                                    }
+                                }}
+                            />
+                            <button
+                                className="add-comment-btn"
+                                onClick={handleAddComment}
+                                disabled={!newComment.trim()}
+                            >
+                                Add Comment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNavigateTrack }) {
     const { currentTheme } = useTheme()
     const [items, setItems] = useState([])
@@ -222,6 +361,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
     const [selectedCategory, setSelectedCategory] = useState('all')
     const [selectedPriority, setSelectedPriority] = useState('all')
     const [sortBy, setSortBy] = useState('sortOrder') // sortOrder, priority, created
+    const [selectedItem, setSelectedItem] = useState(null) // For comments modal
 
     const isTrackLevel = trackId !== undefined
     const apiEndpoint = isTrackLevel
@@ -574,7 +714,8 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
     }
 
     const cycleCategory = () => {
-        const categories = ['all', ...Object.keys(CATEGORIES)]
+        // Exclude General (0) from filter options - those live in "All"
+        const categories = ['all', '2', '3', '4', '5']
         const currentIndex = categories.indexOf(selectedCategory)
         const nextIndex = (currentIndex + 1) % categories.length
         setSelectedCategory(categories[nextIndex])
@@ -596,6 +737,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
 
     const getCategoryLabel = () => {
         if (selectedCategory === 'all') return 'All'
+        if (selectedCategory === '0') return 'All' // General items show in All
         return CATEGORIES[selectedCategory]?.name || 'All'
     }
 
@@ -617,21 +759,51 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             <div className="kanban-filters">
                 <div className="filter-group">
                     <label>Category:</label>
-                    <button className="filter-cycle-btn" onClick={cycleCategory}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSelectedCategory('all')
+                            } else {
+                                cycleCategory()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getCategoryLabel()}
                     </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Priority:</label>
-                    <button className="filter-cycle-btn" onClick={cyclePriority}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSelectedPriority('all')
+                            } else {
+                                cyclePriority()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getPriorityLabel()}
                     </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Sort by:</label>
-                    <button className="filter-cycle-btn" onClick={cycleSortBy}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSortBy('sortOrder')
+                            } else {
+                                cycleSortBy()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getSortByLabel()}
                     </button>
                 </div>
@@ -684,6 +856,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                                 focusKey={focusKey}
                                 setFocusKey={setFocusKey}
                                 updateItemField={updateItemField}
+                                onOpenComments={setSelectedItem}
                             />
                         ))}
                     </div>
@@ -780,6 +953,14 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                     )}
                 </div>
             </div>
+
+            {/* Comments Modal */}
+            {selectedItem && (
+                <CommentsModal
+                    item={selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
         </div>
     )
 }
