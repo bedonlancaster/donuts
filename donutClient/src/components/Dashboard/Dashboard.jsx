@@ -31,6 +31,9 @@ function Dashboard({ user, onLogout }) {
                 if (response.ok) {
                     const projectsData = await response.json()
                     setProjects(projectsData)
+                } else if (response.status === 401) {
+                    // Unauthorized - likely a new user or session issue, just show empty state
+                    setProjects([])
                 } else {
                     setError('Failed to load projects')
                 }
@@ -167,8 +170,8 @@ function Dashboard({ user, onLogout }) {
                         projects.map(renderDonutCard)
                     ) : (
                         <div className="empty-state">
-                            <h3>No DONUTs yet!</h3>
-                            <p>Click "Create" to start your first collaborative project.</p>
+                            <h3>Ready to start your first DONUT?</h3>
+                            <p>Click "+ Create" to begin a new collaborative project.</p>
                         </div>
                     )}
                 </div>
