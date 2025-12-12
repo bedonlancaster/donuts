@@ -13,26 +13,15 @@ namespace DonutAPI.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectTheme> ProjectThemes { get; set; }
         public DbSet<ProjectCollaborator> ProjectCollaborators { get; set; }
+        public DbSet<ProjectInvitation> ProjectInvitations { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<HitListItem> HitListItems { get; set; }
+        public DbSet<HitListItemComment> HitListItemComments { get; set; }
         public DbSet<Session> Sessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // User relationships and enum conversion
-            modelBuilder.Entity<User>(entity =>
-            {
-                // Convert the List<UserRole> to a comma-separated string for storage
-                entity.Property(e => e.Roles)
-                    .HasConversion(
-                        v => string.Join(',', v.Select(r => ((int)r).ToString())),
-                        v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                              .Select(s => (UserRole)int.Parse(s))
-                              .ToList()
-                    );
-            });
 
             // Project relationships and enum conversion
             modelBuilder.Entity<Project>(entity =>
@@ -95,6 +84,21 @@ namespace DonutAPI.Data
 
                 entity.Property(e => e.Priority).HasConversion<int>();
                 entity.Property(e => e.Status).HasConversion<int>();
+                entity.Property(e => e.Category).HasConversion<int>();
+            });
+
+            // HitListItemComment relationships
+            modelBuilder.Entity<HitListItemComment>(entity =>
+            {
+                entity.HasOne(c => c.HitListItem)
+                    .WithMany(h => h.Comments)
+                    .HasForeignKey(c => c.HitListItemId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(c => c.User)
+                    .WithMany(u => u.HitListItemComments)
+                    .HasForeignKey(c => c.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Session relationships and enum conversion
@@ -152,6 +156,31 @@ namespace DonutAPI.Data
                     .HasDatabaseName("IX_ProjectCollaborator_Project_User");
 
                 entity.Property(e => e.Role).HasConversion<int>();
+                entity.Property(e => e.Status).HasConversion<int>();
+            });
+
+            // ProjectInvitation relationships and enum conversion
+            modelBuilder.Entity<ProjectInvitation>(entity =>
+            {
+                entity.HasOne(pi => pi.Project)
+                    .WithMany()
+                    .HasForeignKey(pi => pi.ProjectId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pi => pi.InvitedUser)
+                    .WithMany()
+                    .HasForeignKey(pi => pi.InvitedUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pi => pi.InvitedBy)
+                    .WithMany()
+                    .HasForeignKey(pi => pi.InvitedById)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Prevent duplicate pending invitations
+                entity.HasIndex(e => new { e.ProjectId, e.InvitedUserId, e.Status })
+                    .HasDatabaseName("IX_ProjectInvitation_Project_User_Status");
+
                 entity.Property(e => e.Status).HasConversion<int>();
             });
         }

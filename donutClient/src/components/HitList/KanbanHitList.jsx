@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import './KanbanHitList.css'
 
 // Category constants - no emojis, use theme colors
 const CATEGORIES = {
     0: { name: 'General' },
-    1: { name: 'Tracking' },
     2: { name: 'Production' },
     3: { name: 'Mixing' },
     4: { name: 'Mastering' },
@@ -21,9 +21,27 @@ const PRIORITIES = {
 }
 
 // Card Component
-function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddBulletPoint, onUpdateBulletPoint, onRemoveBulletPoint, focusKey, setFocusKey, updateItemField }) {
+function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddBulletPoint, onUpdateBulletPoint, onRemoveBulletPoint, focusKey, setFocusKey, updateItemField, onOpenComments }) {
+    const [showCategoryDropdown, setShowCategoryDropdown] = React.useState(false)
+    const dropdownRef = React.useRef(null)
     const category = CATEGORIES[item.category] || CATEGORIES[0]
     const priority = PRIORITIES[item.priority] || PRIORITIES[2]
+
+    // Close dropdown when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowCategoryDropdown(false)
+            }
+        }
+
+        if (showCategoryDropdown) {
+            document.addEventListener('mousedown', handleClickOutside)
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside)
+            }
+        }
+    }, [showCategoryDropdown])
 
     return (
         <div className="kanban-card">
@@ -134,7 +152,14 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
                     </div>
                 </div>
             ) : (
-                <div className="card-display-mode">
+                <div className="card-display-mode" onClick={() => {
+                    // Only allow comments on saved items (not temp IDs)
+                    if (typeof item.id === 'string' && item.id.startsWith('temp-')) {
+                        alert('Please save this item before adding comments')
+                        return
+                    }
+                    onOpenComments(item)
+                }}>
                     <h4 className="card-title">{item.subject}</h4>
 
                     {item.bulletPoints.filter(b => b.trim()).length > 0 && (
@@ -147,20 +172,37 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
 
                     <div className="card-footer">
                         <div className="card-badges">
-                            <span
-                                className="category-badge clickable"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    const categories = Object.keys(CATEGORIES).map(k => parseInt(k))
-                                    const currentIndex = categories.indexOf(item.category)
-                                    const nextIndex = (currentIndex + 1) % categories.length
-                                    onUpdateItem(item.id, 'category', categories[nextIndex])
-                                    updateItemField(item.id, 'category', categories[nextIndex])
-                                }}
-                                title="Click to change category"
-                            >
-                                {category.name}
-                            </span>
+                            <div className="category-badge-wrapper" ref={dropdownRef}>
+                                <span
+                                    className="category-badge clickable"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowCategoryDropdown(!showCategoryDropdown)
+                                    }}
+                                    title="Click to change category"
+                                >
+                                    {category.name}
+                                </span>
+                                {showCategoryDropdown && (
+                                    <div className="category-dropdown">
+                                        {Object.entries(CATEGORIES).map(([key, cat]) => (
+                                            <div
+                                                key={key}
+                                                className={`category-option ${parseInt(key) === item.category ? 'active' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    const newCategory = parseInt(key)
+                                                    onUpdateItem(item.id, 'category', newCategory)
+                                                    updateItemField(item.id, 'category', newCategory)
+                                                    setShowCategoryDropdown(false)
+                                                }}
+                                            >
+                                                {cat.name}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <span
                                 className={`priority-badge priority-${priority.level} clickable`}
                                 onClick={(e) => {
@@ -213,20 +255,355 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
     )
 }
 
+// Comments Modal Component
+function CommentsModal({ item, onClose }) {
+    const [comments, setComments] = useState([])
+    const [newComment, setNewComment] = useState('')
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [currentUser, setCurrentUser] = useState(null)
+    const [editingCommentId, setEditingCommentId] = useState(null)
+    const [editText, setEditText] = useState('')
+
+    // Fetch current user info
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    credentials: 'include'
+                })
+                if (response.ok) {
+                    const user = await response.json()
+                    setCurrentUser(user)
+                }
+            } catch (err) {
+                console.error('Error fetching current user:', err)
+            }
+        }
+        fetchCurrentUser()
+    }, [])
+
+    useEffect(() => {
+        // Don't try to fetch comments for unsaved items
+        if (typeof item.id === 'string' && item.id.startsWith('temp-')) {
+            setIsLoading(false)
+            setError('Item must be saved before adding comments')
+            return
+        }
+
+        console.log('Fetching comments for item:', item.id, 'Item object:', item)
+
+        const fetchComments = async () => {
+            try {
+                setIsLoading(true)
+                setError(null)
+                const response = await fetch(`http://localhost:5000/api/hitlistitems/${item.id}/comments`, {
+                    credentials: 'include'
+                })
+
+                console.log('Comments fetch response:', response.status, 'for item:', item.id)
+
+                if (!response.ok) {
+                    // If it's a 404 or similar, just show empty comments
+                    console.warn('Could not fetch comments:', response.status, 'Item ID:', item.id)
+                    setComments([])
+                    return
+                }
+
+                const data = await response.json()
+                setComments(Array.isArray(data) ? data : [])
+            } catch (err) {
+                console.error('Error fetching comments:', err)
+                // Don't show error for network issues, just show empty state
+                setComments([])
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchComments()
+    }, [item.id])
+
+    const handleAddComment = async () => {
+        if (!newComment.trim()) return
+
+        // Don't allow adding comments to unsaved items
+        if (typeof item.id === 'string' && item.id.startsWith('temp-')) {
+            alert('Please save this item before adding comments')
+            return
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/hitlistitems/${item.id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ text: newComment })
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to add comment')
+            }
+
+            const comment = await response.json()
+            setComments([...comments, comment])
+            setNewComment('')
+        } catch (err) {
+            console.error('Error adding comment:', err)
+            alert('Failed to add comment. Please try again.')
+        }
+    }
+
+    const handleEditComment = async (commentId) => {
+        if (!editText.trim()) return
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/hitlistitems/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ text: editText })
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to update comment')
+            }
+
+            const updatedComment = await response.json()
+            setComments(comments.map(c => c.id === commentId ? updatedComment : c))
+            setEditingCommentId(null)
+            setEditText('')
+        } catch (err) {
+            console.error('Error updating comment:', err)
+            alert('Failed to update comment. Please try again.')
+        }
+    }
+
+    const handleDeleteComment = async (commentId) => {
+        if (!confirm('Are you sure you want to delete this comment?')) return
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/hitlistitems/comments/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to delete comment')
+            }
+
+            setComments(comments.filter(c => c.id !== commentId))
+        } catch (err) {
+            console.error('Error deleting comment:', err)
+            alert('Failed to delete comment. Please try again.')
+        }
+    }
+
+    const startEditingComment = (comment) => {
+        setEditingCommentId(comment.id)
+        setEditText(comment.text)
+    }
+
+    const cancelEditing = () => {
+        setEditingCommentId(null)
+        setEditText('')
+    }
+
+    const category = CATEGORIES[item.category] || CATEGORIES[0]
+    const priority = PRIORITIES[item.priority] || PRIORITIES[2]
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <div className="modal-title-section">
+                        <h2>{item.subject}</h2>
+                        <div className="modal-badges">
+                            <span className="category-badge-small">{category.name}</span>
+                            <span className={`priority-badge priority-${priority.level}`}>{priority.name}</span>
+                        </div>
+                    </div>
+                    <button className="modal-close-btn" onClick={onClose}>×</button>
+                </div>
+
+                <div className="modal-body">
+                    {item.bulletPoints.filter(b => b.trim()).length > 0 && (
+                        <div className="modal-description">
+                            <h3>Details</h3>
+                            <ul className="bullet-list">
+                                {item.bulletPoints.filter(b => b.trim()).map((bullet, index) => (
+                                    <li key={index}>{bullet}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className="modal-comments">
+                        <h3>Comments ({isLoading ? '...' : comments.length})</h3>
+
+                        {isLoading ? (
+                            <p className="no-comments">Loading comments...</p>
+                        ) : (
+                            <>
+                                <div className="comments-list">
+                                    {comments.length === 0 ? (
+                                        <p className="no-comments">No comments yet. Be the first to comment!</p>
+                                    ) : (
+                                        comments.map(comment => {
+                                            const isOwnComment = currentUser && comment.author.id === currentUser.id
+                                            const isEditing = editingCommentId === comment.id
+
+                                            return (
+                                                <div key={comment.id} className="comment">
+                                                    <div className="comment-header">
+                                                        <strong>{comment.author.username}</strong>
+                                                        <span className="comment-time">
+                                                            {new Date(comment.createdAt).toLocaleString()}
+                                                            {comment.updatedAt && ' (edited)'}
+                                                        </span>
+                                                    </div>
+
+                                                    {isEditing ? (
+                                                        <div className="comment-edit-mode">
+                                                            <textarea
+                                                                className="comment-edit-textarea"
+                                                                value={editText}
+                                                                onChange={(e) => setEditText(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                                        e.preventDefault()
+                                                                        handleEditComment(comment.id)
+                                                                    } else if (e.key === 'Escape') {
+                                                                        cancelEditing()
+                                                                    }
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                            <div className="comment-edit-actions">
+                                                                <button
+                                                                    className="comment-save-btn"
+                                                                    onClick={() => handleEditComment(comment.id)}
+                                                                    disabled={!editText.trim()}
+                                                                >
+                                                                    Save
+                                                                </button>
+                                                                <button
+                                                                    className="comment-cancel-btn"
+                                                                    onClick={cancelEditing}
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <p className="comment-text">{comment.text}</p>
+                                                            {isOwnComment && (
+                                                                <div className="comment-actions">
+                                                                    <button
+                                                                        className="comment-edit-btn"
+                                                                        onClick={() => startEditingComment(comment)}
+                                                                        title="Edit comment"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        className="comment-delete-btn"
+                                                                        onClick={() => handleDeleteComment(comment.id)}
+                                                                        title="Delete comment"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )
+                                        })
+                                    )}
+                                </div>
+
+                                <div className="add-comment">
+                                    <textarea
+                                        placeholder="Add a comment..."
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                e.preventDefault()
+                                                handleAddComment()
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        className="add-comment-btn"
+                                        onClick={handleAddComment}
+                                        disabled={!newComment.trim()}
+                                    >
+                                        Add Comment
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNavigateTrack }) {
     const { currentTheme } = useTheme()
+    const { currentTrack, isPlaying, togglePlayPause, playTrack } = useAudioPlayer()
     const [items, setItems] = useState([])
+    const [currentPlayingTrack, setCurrentPlayingTrack] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [focusKey, setFocusKey] = useState(null)
     const [showCompletedStack, setShowCompletedStack] = useState(false)
     const [selectedCategory, setSelectedCategory] = useState('all')
     const [selectedPriority, setSelectedPriority] = useState('all')
     const [sortBy, setSortBy] = useState('sortOrder') // sortOrder, priority, created
+    const [selectedItem, setSelectedItem] = useState(null) // For comments modal
 
     const isTrackLevel = trackId !== undefined
     const apiEndpoint = isTrackLevel
         ? `http://localhost:5000/api/hitlistitems/track/${trackId}`
         : `http://localhost:5000/api/hitlistitems/project/${projectId}`
+
+    // Fetch current track data for play button
+    useEffect(() => {
+        if (isTrackLevel && trackId) {
+            const fetchTrack = async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
+                        credentials: 'include'
+                    })
+                    if (response.ok) {
+                        const track = await response.json()
+                        setCurrentPlayingTrack(track)
+                    }
+                } catch (err) {
+                    console.error('Error fetching track:', err)
+                }
+            }
+            fetchTrack()
+        }
+    }, [trackId, isTrackLevel])
+
+    const handlePlayTrack = () => {
+        if (currentPlayingTrack) {
+            if (currentTrack?.id === currentPlayingTrack.id && isPlaying) {
+                togglePlayPause()
+            } else {
+                playTrack(currentPlayingTrack)
+            }
+        }
+    }
 
     // Global keyboard listener for Enter to create new item
     useEffect(() => {
@@ -574,7 +951,8 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
     }
 
     const cycleCategory = () => {
-        const categories = ['all', ...Object.keys(CATEGORIES)]
+        // Exclude General (0) from filter options - those live in "All"
+        const categories = ['all', '2', '3', '4', '5']
         const currentIndex = categories.indexOf(selectedCategory)
         const nextIndex = (currentIndex + 1) % categories.length
         setSelectedCategory(categories[nextIndex])
@@ -596,6 +974,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
 
     const getCategoryLabel = () => {
         if (selectedCategory === 'all') return 'All'
+        if (selectedCategory === '0') return 'All' // General items show in All
         return CATEGORIES[selectedCategory]?.name || 'All'
     }
 
@@ -617,21 +996,51 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             <div className="kanban-filters">
                 <div className="filter-group">
                     <label>Category:</label>
-                    <button className="filter-cycle-btn" onClick={cycleCategory}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSelectedCategory('all')
+                            } else {
+                                cycleCategory()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getCategoryLabel()}
                     </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Priority:</label>
-                    <button className="filter-cycle-btn" onClick={cyclePriority}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSelectedPriority('all')
+                            } else {
+                                cyclePriority()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getPriorityLabel()}
                     </button>
                 </div>
 
                 <div className="filter-group">
                     <label>Sort by:</label>
-                    <button className="filter-cycle-btn" onClick={cycleSortBy}>
+                    <button
+                        className="filter-cycle-btn"
+                        onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                                setSortBy('sortOrder')
+                            } else {
+                                cycleSortBy()
+                            }
+                        }}
+                        title="Click to cycle | Cmd/Ctrl+Click to reset"
+                    >
                         {getSortByLabel()}
                     </button>
                 </div>
@@ -684,6 +1093,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                                 focusKey={focusKey}
                                 setFocusKey={setFocusKey}
                                 updateItemField={updateItemField}
+                                onOpenComments={setSelectedItem}
                             />
                         ))}
                     </div>
@@ -780,6 +1190,14 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                     )}
                 </div>
             </div>
+
+            {/* Comments Modal */}
+            {selectedItem && (
+                <CommentsModal
+                    item={selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
         </div>
     )
 }

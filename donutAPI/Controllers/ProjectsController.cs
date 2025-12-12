@@ -188,13 +188,13 @@ namespace DonutAPI.Controllers
                 await _context.SaveChangesAsync(); // Save project with theme ID
             }
 
-            // Add creator as initial collaborator with their primary role
-            var creatorRole = user.IsProducer ? CollaboratorRole.Producer : CollaboratorRole.Artist;
+            // Add creator as initial collaborator - default to Producer role
+            // (In the future, this could be specified in the CreateProjectDto)
             var creatorCollaborator = new ProjectCollaborator
             {
                 ProjectId = project.Id,
                 UserId = user.Id,
-                Role = creatorRole,
+                Role = CollaboratorRole.Producer,
                 Status = CollaboratorStatus.Active,
                 AddedById = user.Id,
                 JoinedAt = DateTime.UtcNow
@@ -502,6 +502,50 @@ namespace DonutAPI.Controllers
             return NoContent();
         }
 
+        // PATCH: api/projects/5/collaborators/10/role
+        [HttpPatch("{id}/collaborators/{collaboratorId}/role")]
+        public async Task<ActionResult<CollaboratorDto>> UpdateCollaboratorRole(int id, int collaboratorId, [FromBody] CollaboratorRole newRole)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null) return NotFound("Project not found");
+
+            // Check if user is project creator or an active collaborator
+            var hasPermission = project.CreatedById == user.Id ||
+                               await _context.ProjectCollaborators
+                                   .AnyAsync(c => c.ProjectId == id && c.UserId == user.Id && c.Status == CollaboratorStatus.Active);
+
+            if (!hasPermission) return Forbid("You don't have permission to update collaborator roles");
+
+            var collaborator = await _context.ProjectCollaborators
+                .Include(c => c.User)
+                .Include(c => c.AddedBy)
+                .FirstOrDefaultAsync(c => c.Id == collaboratorId && c.ProjectId == id);
+
+            if (collaborator == null) return NotFound("Collaborator not found");
+
+            // Update the role
+            collaborator.Role = newRole;
+
+            await _context.SaveChangesAsync();
+
+            var collaboratorDto = new CollaboratorDto
+            {
+                Id = collaborator.Id,
+                User = collaborator.User.ToUserDto(),
+                Role = collaborator.Role,
+                Status = collaborator.Status,
+                JoinedAt = collaborator.JoinedAt,
+                AddedBy = collaborator.AddedBy.ToUserDto()
+            };
+
+            return Ok(collaboratorDto);
+        }
+
         // GET: api/projects/search-users?query=john
         [HttpGet("search-users")]
         public async Task<ActionResult<IEnumerable<UserDto>>> SearchUsers(string query)
@@ -512,9 +556,10 @@ namespace DonutAPI.Controllers
             }
 
             var users = await _context.Users
-                .Where(u => u.DisplayName.Contains(query) ||
-                           u.UserName!.Contains(query) ||
-                           u.Email!.Contains(query))
+                .Where(u => u.UserName!.Contains(query) ||
+                           u.Email!.Contains(query) ||
+                           u.FirstName.Contains(query) ||
+                           u.LastName.Contains(query))
                 .Take(10) // Limit results for performance
                 .Select(u => u.ToUserDto())
                 .ToListAsync();

@@ -18,6 +18,32 @@
     margin-bottom: 3rem;
 }
 
+.header-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dashboard-title-logo {
+    height: 250px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: -6rem;
+    margin-left: -4.3rem;
+    margin-top: -7rem;
+    filter: drop-shadow(0 2px 8px var(--shadow));
+}
+
+.dashboard-donut-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    margin-left: -5rem;
+    margin-bottom: 1rem;
+    margin-top: auto;
+    filter: drop-shadow(0 2px 8px var(--shadow));
+}
+
 .content-header h1 {
     font-size: 2.5rem;
     font-weight: 700;
@@ -153,6 +179,30 @@
     color: #7f8c8d;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
+}
+
+.nav-item.nav-item-sub {
+    padding-left: 2.5rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.nav-item.invitations-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.invitation-badge {
+    background: var(--dark-coral);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
 }
 
 .nav-item:hover {
@@ -201,7 +251,6 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
 }
 
 .profile-avatar {
@@ -241,16 +290,16 @@
 }
 
 .logout-btn {
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.6rem;
     background: transparent;
     border: 1px solid #e1e8ed;
     color: #7f8c8d;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin-left: auto;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
+    width: 100%;
 }
 
 .logout-btn:hover {

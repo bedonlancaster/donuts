@@ -39,6 +39,152 @@
     object-fit: cover;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.project-artwork:hover .artwork-image {
+    transform: scale(1.05);
+}
+
+/* Artwork Modal */
+.artwork-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.artwork-modal {
+    background: var(--theme-background);
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.artwork-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--theme-secondary);
+}
+
+.artwork-modal-header h2 {
+    margin: 0;
+    color: var(--theme-text);
+    font-size: 1.5rem;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--theme-text);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: var(--theme-secondary);
+}
+
+.artwork-modal-body {
+    padding: 2rem;
+}
+
+.artwork-preview-large {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.artwork-preview-large img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.artwork-upload-section {
+    text-align: center;
+}
+
+.artwork-upload-label {
+    display: inline-block;
+    padding: 6px 12px !important;
+    background: var(--theme-primary);
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px !important;
+    transition: all 0.2s;
+    max-width: 180px;
+    line-height: 1 !important;
+    height: auto !important;
+}
+
+.artwork-upload-label:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.upload-actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.upload-actions p {
+    margin: 0;
+    color: var(--theme-text);
+    font-size: 0.9rem;
+}
+
+.upload-btn,
+.cancel-btn {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-btn {
+    background: var(--theme-primary);
+    color: white;
+}
+
+.upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cancel-btn {
+    background: var(--theme-secondary);
+    color: var(--theme-text);
+}
+
+.cancel-btn:hover {
+    background: var(--theme-accent);
 }
 
 .project-details {

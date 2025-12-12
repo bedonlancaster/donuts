@@ -76,6 +76,40 @@ namespace DonutAPI.Migrations
                     b.ToTable("HitListItems");
                 });
 
+            modelBuilder.Entity("DonutAPI.Models.HitListItemComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("HitListItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HitListItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HitListItemComments");
+                });
+
             modelBuilder.Entity("DonutAPI.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -163,6 +197,48 @@ namespace DonutAPI.Migrations
                         .HasDatabaseName("IX_ProjectCollaborator_Project_User");
 
                     b.ToTable("ProjectCollaborators");
+                });
+
+            modelBuilder.Entity("DonutAPI.Models.ProjectInvitation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("InvitedById")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InvitedUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedById");
+
+                    b.HasIndex("InvitedUserId");
+
+                    b.HasIndex("ProjectId", "InvitedUserId", "Status")
+                        .HasDatabaseName("IX_ProjectInvitation_Project_User_Status");
+
+                    b.ToTable("ProjectInvitations");
                 });
 
             modelBuilder.Entity("DonutAPI.Models.ProjectTheme", b =>
@@ -330,11 +406,6 @@ namespace DonutAPI.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -376,10 +447,6 @@ namespace DonutAPI.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Roles")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
@@ -562,6 +629,25 @@ namespace DonutAPI.Migrations
                     b.Navigation("Track");
                 });
 
+            modelBuilder.Entity("DonutAPI.Models.HitListItemComment", b =>
+                {
+                    b.HasOne("DonutAPI.Models.HitListItem", "HitListItem")
+                        .WithMany("Comments")
+                        .HasForeignKey("HitListItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DonutAPI.Models.User", "User")
+                        .WithMany("HitListItemComments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HitListItem");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DonutAPI.Models.Project", b =>
                 {
                     b.HasOne("DonutAPI.Models.User", "CreatedBy")
@@ -612,6 +698,33 @@ namespace DonutAPI.Migrations
                     b.Navigation("RemovedBy");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DonutAPI.Models.ProjectInvitation", b =>
+                {
+                    b.HasOne("DonutAPI.Models.User", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DonutAPI.Models.User", "InvitedUser")
+                        .WithMany()
+                        .HasForeignKey("InvitedUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DonutAPI.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvitedBy");
+
+                    b.Navigation("InvitedUser");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("DonutAPI.Models.Session", b =>
@@ -718,6 +831,11 @@ namespace DonutAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DonutAPI.Models.HitListItem", b =>
+                {
+                    b.Navigation("Comments");
+                });
+
             modelBuilder.Entity("DonutAPI.Models.Project", b =>
                 {
                     b.Navigation("Collaborators");
@@ -749,6 +867,8 @@ namespace DonutAPI.Migrations
                     b.Navigation("CreatedHitListItems");
 
                     b.Navigation("CreatedProjects");
+
+                    b.Navigation("HitListItemComments");
 
                     b.Navigation("ProducerSessions");
 

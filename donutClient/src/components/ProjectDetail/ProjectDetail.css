@@ -518,6 +518,12 @@
     align-items: center;
     gap: 1rem;
     color: var(--theme-text);
+    position: relative;
+    z-index: 1;
+}
+
+.collaborator-item:has(.role-dropdown) {
+    z-index: 100;
 }
 
 .collaborator-avatar {
@@ -557,6 +563,68 @@
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 600;
+}
+
+.role-badge-wrapper {
+    position: relative;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--theme-primary);
+    color: white;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+.role-badge.clickable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.role-badge.clickable:hover {
+    opacity: 0.8;
+}
+
+.role-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.role-option {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+}
+
+.role-option:hover {
+    background: var(--theme-primary);
+    color: white;
+}
+
+.role-option.active {
+    background: var(--theme-primary);
+    color: white;
+    font-weight: 700;
 }
 
 /* Settings Section */

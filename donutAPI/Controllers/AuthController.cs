@@ -42,9 +42,7 @@ namespace DonutAPI.Controllers
                 UserName = registerDto.Username,
                 Email = registerDto.Email,
                 FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                DisplayName = registerDto.DisplayName,
-                Roles = registerDto.Roles
+                LastName = registerDto.LastName
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -53,6 +51,9 @@ namespace DonutAPI.Controllers
             {
                 return BadRequest(result.Errors);
             }
+
+            // Automatically sign in the user after successful registration
+            await _signInManager.SignInAsync(user, isPersistent: true);
 
             // Return user info (without password)
             var userDto = user.ToUserDto();

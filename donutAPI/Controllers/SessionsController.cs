@@ -125,16 +125,16 @@ namespace DonutAPI.Controllers
                 return Unauthorized();
             }
 
-            // Verify producer and artist exist and are of correct types
+            // Verify producer and artist exist
             var producer = await _userManager.FindByIdAsync(createSessionDto.ProducerId.ToString());
             var artist = await _userManager.FindByIdAsync(createSessionDto.ArtistId.ToString());
 
-            if (producer == null || !producer.IsProducer)
+            if (producer == null)
             {
                 return BadRequest("Invalid producer");
             }
 
-            if (artist == null || !artist.IsArtist)
+            if (artist == null)
             {
                 return BadRequest("Invalid artist");
             }
@@ -296,27 +296,29 @@ namespace DonutAPI.Controllers
         }
 
         // GET: api/sessions/producers
+        // Note: With new role system, any user can be a producer on a project
+        // This endpoint now returns all users for backwards compatibility
         [HttpGet("producers")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAvailableProducers()
         {
-            var producers = await _userManager.Users
-                .Where(u => u.IsProducer)
+            var users = await _userManager.Users
                 .Select(u => u.ToUserDto())
                 .ToListAsync();
 
-            return Ok(producers);
+            return Ok(users);
         }
 
         // GET: api/sessions/artists
+        // Note: With new role system, any user can be an artist on a project
+        // This endpoint now returns all users for backwards compatibility
         [HttpGet("artists")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAvailableArtists()
         {
-            var artists = await _userManager.Users
-                .Where(u => u.IsArtist)
+            var users = await _userManager.Users
                 .Select(u => u.ToUserDto())
                 .ToListAsync();
 
-            return Ok(artists);
+            return Ok(users);
         }
     }
 }

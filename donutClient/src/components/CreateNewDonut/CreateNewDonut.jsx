@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
+import InviteCollaboratorModal from '../InviteCollaborator/InviteCollaboratorModal'
 import './CreateNewDonut.css'
 
 // Color palettes for theme preview and creation
@@ -57,15 +58,12 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
         theme: {
             mode: 'Light',
             palette: 'Coral'
-        },
-        collaborators: [] // Array of selected collaborators
+        }
     })
 
     const [artworkPreview, setArtworkPreview] = useState(null) // Preview URL for artwork
-
-    const [collaboratorSearch, setCollaboratorSearch] = useState('')
-    const [searchResults, setSearchResults] = useState([])
-    const [isSearching, setIsSearching] = useState(false)
+    const [showInviteModal, setShowInviteModal] = useState(false)
+    const [pendingInvitations, setPendingInvitations] = useState([]) // Track pending invitations
 
     const [errors, setErrors] = useState({})
     const [isLoading, setIsLoading] = useState(false)
@@ -165,74 +163,13 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const searchUsers = async (query) => {
-        if (query.length < 2) {
-            setSearchResults([])
-            return
-        }
-
-        setIsSearching(true)
-        try {
-            const response = await fetch(`http://localhost:5000/api/projects/search-users?query=${encodeURIComponent(query)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include' // Use cookies for authentication instead of Bearer token
-            })
-
-            if (response.ok) {
-                const users = await response.json()
-                setSearchResults(users || [])
-            } else {
-                console.error('User search failed:', response.status, response.statusText)
-                setSearchResults([])
-            }
-        } catch (error) {
-            console.error('Error searching users:', error)
-            setSearchResults([])
-        } finally {
-            setIsSearching(false)
-        }
+    const handleAddInvitation = (invitation) => {
+        // Add the invitation to pending list
+        setPendingInvitations(prev => [...prev, invitation])
     }
 
-    const handleCollaboratorSearchChange = (e) => {
-        const query = e.target.value
-        setCollaboratorSearch(query)
-        searchUsers(query)
-    }
-
-    const addCollaborator = (user) => {
-        if (!formData.collaborators.find(c => c.userId === user.id)) {
-            setFormData(prev => ({
-                ...prev,
-                collaborators: [...prev.collaborators, {
-                    userId: user.id,
-                    username: user.username,
-                    displayName: user.displayName,
-                    email: user.email,
-                    role: 'Artist'  // Default to Artist, can be changed in UI
-                }]
-            }))
-        }
-        setCollaboratorSearch('')
-        setSearchResults([]) // Clear search results after adding
-    }
-
-    const removeCollaborator = (userId) => {
-        setFormData(prev => ({
-            ...prev,
-            collaborators: prev.collaborators.filter(c => c.userId !== userId)
-        }))
-    }
-
-    const updateCollaboratorRole = (userId, role) => {
-        setFormData(prev => ({
-            ...prev,
-            collaborators: prev.collaborators.map(c =>
-                c.userId === userId ? { ...c, role } : c
-            )
-        }))
+    const removeInvitation = (invitedUserId) => {
+        setPendingInvitations(prev => prev.filter(inv => inv.invitedUserId !== invitedUserId))
     }
 
     const validateForm = () => {
@@ -321,31 +258,28 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     }
                 }
 
-                // Add collaborators if any were selected
-                if (formData.collaborators.length > 0) {
-                    for (const collaborator of formData.collaborators) {
+                // Send invitations if any were queued
+                if (pendingInvitations.length > 0) {
+                    for (const invitation of pendingInvitations) {
                         try {
-                            const collabResponse = await fetch(`http://localhost:5000/api/projects/${newProject.id}/collaborators`, {
+                            const inviteResponse = await fetch('http://localhost:5000/api/invitations/send', {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    email: collaborator.email,
-                                    role: collaborator.role === 'Producer' ? 1 :
-                                        collaborator.role === 'Artist' ? 2 :
-                                            collaborator.role === 'Engineer' ? 3 :
-                                                collaborator.role === 'Songwriter' ? 4 :
-                                                    collaborator.role === 'Vocalist' ? 5 : 2 // Default to Artist
+                                    projectId: newProject.id,
+                                    invitedUserId: invitation.invitedUserId,
+                                    message: invitation.message || ''
                                 })
                             })
 
-                            if (!collabResponse.ok) {
-                                console.error(`Failed to add collaborator ${collaborator.email}:`, await collabResponse.text())
+                            if (!inviteResponse.ok) {
+                                console.error(`Failed to send invitation:`, await inviteResponse.text())
                             }
                         } catch (error) {
-                            console.error(`Error adding collaborator ${collaborator.email}:`, error)
+                            console.error(`Error sending invitation:`, error)
                         }
                     }
                 }
@@ -390,10 +324,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     >← Back</button>
                     <h1>Create New DONUT</h1>
                     <p className="create-subtitle">
-                        {user.isProducer
-                            ? "Start a new collaborative project with an artist"
-                            : "Propose a new project idea to work on with producers"
-                        }
+                        Start a new collaborative project
                     </p>
                 </div>
 
@@ -544,89 +475,49 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                         <h3 className="section-title">Collaboration</h3>
 
                         <div className="form-group">
-                            <label htmlFor="collaboratorSearch" className="form-label">
-                                Add Collaborators (Optional)
+                            <label className="form-label">
+                                Invite Collaborators (Optional)
                             </label>
-                            <input
-                                type="text"
-                                id="collaboratorSearch"
-                                value={collaboratorSearch}
-                                onChange={handleCollaboratorSearchChange}
-                                className="form-input collaborator-search"
-                                placeholder="Search by username or display name..."
+
+                            <button
+                                type="button"
+                                className="invite-collaborator-btn"
+                                onClick={() => setShowInviteModal(true)}
                                 disabled={isLoading}
-                            />
+                            >
+                                + Invite Collaborator
+                            </button>
 
-                            {isSearching && (
-                                <div className="search-loading">
-                                    <span>Searching users...</span>
-                                </div>
-                            )}
-
-                            {errors.collaborator && (
-                                <div className="error-message">
-                                    {errors.collaborator}
-                                </div>
-                            )}
-
-                            {searchResults.length > 0 && (
-                                <div className="search-results">
-                                    {searchResults.map(user => (
-                                        <div
-                                            key={user.id}
-                                            className="search-result-item"
-                                            onClick={() => addCollaborator(user)}
-                                        >
-                                            <div className="user-info">
-                                                <div className="user-name">
-                                                    <strong>{user.displayName || user.username}</strong>
-                                                    <span className="username">@{user.username}</span>
+                            {pendingInvitations.length > 0 && (
+                                <div className="pending-invitations">
+                                    <h4>Pending Invitations ({pendingInvitations.length}):</h4>
+                                    <p className="invite-note">These invitations will be sent after the DONUT is created</p>
+                                    {pendingInvitations.map((invitation, index) => (
+                                        <div key={index} className="invitation-item">
+                                            <div className="invitation-info">
+                                                <div className="invitation-user">
+                                                    <strong>{invitation.username}</strong>
+                                                    <span className="username">@{invitation.username}</span>
                                                 </div>
-                                                <span className="user-role-badge">{user.userRole}</span>
+                                                {invitation.message && (
+                                                    <div className="invitation-message">{invitation.message}</div>
+                                                )}
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {formData.collaborators.length > 0 && (
-                                <div className="selected-collaborators">
-                                    <h4>Selected Collaborators:</h4>
-                                    {formData.collaborators.map(collaborator => (
-                                        <div key={collaborator.userId} className="collaborator-item">
-                                            <div className="collaborator-info">
-                                                <div className="collaborator-name">
-                                                    <strong>{collaborator.displayName || collaborator.username}</strong>
-                                                    <span className="username">@{collaborator.username}</span>
-                                                </div>
-                                                <select
-                                                    value={collaborator.role}
-                                                    onChange={(e) => updateCollaboratorRole(collaborator.userId, e.target.value)}
-                                                    className="role-select"
-                                                    disabled={isLoading}
-                                                >
-                                                    <option value="Producer">Producer</option>
-                                                    <option value="Artist">Artist</option>
-                                                    <option value="Engineer">Engineer</option>
-                                                    <option value="Songwriter">Songwriter</option>
-                                                    <option value="Vocalist">Vocalist</option>
-                                                </select>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeCollaborator(collaborator.userId)}
-                                                    className="remove-collaborator"
-                                                    disabled={isLoading}
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeInvitation(invitation.invitedUserId)}
+                                                className="remove-invitation"
+                                                disabled={isLoading}
+                                            >
+                                                ×
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
                             )}
 
                             <small className="form-hint">
-                                Search for existing DONUTS users to add as collaborators
+                                Invite DONUTS users to collaborate on this project
                             </small>
                         </div>
                     </div>
@@ -642,6 +533,17 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                         </button>
                     </div>
                 </form>
+
+                {/* Invite Collaborator Modal */}
+                <InviteCollaboratorModal
+                    projectId={null}
+                    isOpen={showInviteModal}
+                    onClose={() => setShowInviteModal(false)}
+                    onInviteSent={(invitation) => {
+                        handleAddInvitation(invitation)
+                        setShowInviteModal(false)
+                    }}
+                />
             </div>
         </div>
     )

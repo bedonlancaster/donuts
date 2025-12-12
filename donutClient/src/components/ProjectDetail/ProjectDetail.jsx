@@ -1,11 +1,29 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import KanbanHitList from '../HitList/KanbanHitList'
 import ProjectHeader from '../ProjectHeader/ProjectHeader'
+import InviteCollaboratorModal from '../InviteCollaborator/InviteCollaboratorModal'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './ProjectDetail.css'
+
+// Collaborator roles - mapping enum values to display names
+const COLLABORATOR_ROLES = {
+    1: { key: 'Artist', label: 'Artist' },
+    2: { key: 'Producer', label: 'Producer' },
+    3: { key: 'Songwriter', label: 'Songwriter' },
+    4: { key: 'Engineer', label: 'Engineer' },
+    5: { key: 'MixingEngineer', label: 'Mixing Engineer' },
+    6: { key: 'MasteringEngineer', label: 'Mastering Engineer' },
+    7: { key: 'Management', label: 'Management' },
+    8: { key: 'Label', label: 'Label' }
+}
+
+// Helper to get role name from enum value
+const getRoleLabel = (roleValue) => {
+    return COLLABORATOR_ROLES[roleValue]?.label || 'Unknown'
+}
 
 // Color palette definitions with improved dark mode text contrast
 const COLOR_PALETTES = {
@@ -52,6 +70,9 @@ function ProjectDetail({ user, onLogout }) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [draggedTrack, setDraggedTrack] = useState(null)
     const [dragOverIndex, setDragOverIndex] = useState(null)
+    const [openRoleDropdown, setOpenRoleDropdown] = useState(null)
+    const [showInviteModal, setShowInviteModal] = useState(false)
+    const roleDropdownRef = useRef(null)
 
     // Theme is set by ThemeLoader; no need to set theme here
 
@@ -80,6 +101,20 @@ function ProjectDetail({ user, onLogout }) {
             })
         }
     }, [project])
+
+    // Click outside handler for role dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target)) {
+                setOpenRoleDropdown(null)
+            }
+        }
+
+        if (openRoleDropdown !== null) {
+            document.addEventListener('mousedown', handleClickOutside)
+            return () => document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [openRoleDropdown])
 
     // Update preview theme in context for live preview
     useEffect(() => {
@@ -140,6 +175,38 @@ function ProjectDetail({ user, onLogout }) {
             console.error('Logout error:', error)
         } finally {
             onLogout()
+        }
+    }
+
+    const handleRoleChange = async (collaboratorId, newRole) => {
+        try {
+            console.log('Updating role for collaborator:', collaboratorId, 'to role:', newRole)
+
+            const response = await fetch(`http://localhost:5000/api/projects/${projectId}/collaborators/${collaboratorId}/role`, {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRole)
+            })
+
+            if (response.ok) {
+                const updatedCollaborator = await response.json()
+                console.log('Successfully updated collaborator:', updatedCollaborator)
+                // Update the project state with the new role
+                setProject(prev => ({
+                    ...prev,
+                    collaborators: prev.collaborators.map(c =>
+                        c.id === collaboratorId ? updatedCollaborator : c
+                    )
+                }))
+            } else {
+                const errorText = await response.text()
+                console.error('Failed to update role:', response.status, errorText)
+            }
+        } catch (error) {
+            console.error('Error updating role:', error)
         }
     }
 
@@ -435,13 +502,12 @@ function ProjectDetail({ user, onLogout }) {
 
                 <div className="user-profile">
                     <div className="profile-avatar" style={{ background: activeTheme.primary, color: activeTheme.text }}>
-                        {user.displayName.charAt(0).toUpperCase()}
+                        {user.username.charAt(0).toUpperCase()}
                     </div>
                     <div className="profile-info">
-                        <div className="profile-name" style={{ color: activeTheme.text }}>{user.displayName}</div>
+                        <div className="profile-name" style={{ color: activeTheme.text }}>{user.username}</div>
                         <div className="profile-role">
-                            {user.isProducer && user.isArtist ? 'Producer & Artist' :
-                                user.isProducer ? 'Producer' : 'Artist'}
+                            Collaborator
                         </div>
                     </div>
                 </div>
@@ -490,7 +556,7 @@ function ProjectDetail({ user, onLogout }) {
                                             >
                                                 {track.title}
                                             </h4>
-                                            <p className="track-artist">{project.artistName || track.uploadedBy.displayName}</p>
+                                            <p className="track-artist">{project.artistName || track.uploadedBy.username}</p>
                                         </div>
                                         <div className="track-duration">
                                             {track.duration ? formatDuration(track.duration) : '--:--'}
@@ -540,22 +606,55 @@ function ProjectDetail({ user, onLogout }) {
                     <div className="collaborators-section">
                         <div className="section-header">
                             <h2>Collaborators</h2>
-                            <button className="add-btn">+ Add Collaborator</button>
+                            <button
+                                className="add-btn"
+                                onClick={() => setShowInviteModal(true)}
+                            >
+                                + Add Collaborator
+                            </button>
                         </div>
 
                         {project.collaborators && project.collaborators.length > 0 ? (
                             <div className="collaborators-list">
-                                {project.collaborators.map(collaborator => (
+                                {project.collaborators.map((collaborator, index) => (
                                     <div key={collaborator.id} className="collaborator-item">
                                         <div className="collaborator-avatar">
-                                            {collaborator.user.displayName.charAt(0).toUpperCase()}
+                                            {collaborator.user.username.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="collaborator-info">
-                                            <h4>{collaborator.user.displayName}</h4>
-                                            <p>{collaborator.role}</p>
+                                            <h4>{collaborator.user.username}</h4>
                                         </div>
-                                        <div className="collaborator-status">
-                                            {collaborator.status}
+                                        <div
+                                            className="role-badge-wrapper"
+                                            ref={openRoleDropdown === index ? roleDropdownRef : null}
+                                        >
+                                            <span
+                                                className="role-badge clickable"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setOpenRoleDropdown(openRoleDropdown === index ? null : index)
+                                                }}
+                                                title="Click to change role"
+                                            >
+                                                {getRoleLabel(collaborator.role)}
+                                            </span>
+                                            {openRoleDropdown === index && (
+                                                <div className="role-dropdown">
+                                                    {Object.entries(COLLABORATOR_ROLES).map(([roleValue, roleInfo]) => (
+                                                        <div
+                                                            key={roleValue}
+                                                            className={`role-option ${collaborator.role === parseInt(roleValue) ? 'active' : ''}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleRoleChange(collaborator.id, parseInt(roleValue))
+                                                                setOpenRoleDropdown(null)
+                                                            }}
+                                                        >
+                                                            {roleInfo.label}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -578,7 +677,7 @@ function ProjectDetail({ user, onLogout }) {
                             <div className="setting-group">
                                 <h4>Project Information</h4>
                                 <p><strong>Created:</strong> {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'Unknown'}</p>
-                                <p><strong>Created by:</strong> {project.createdBy.displayName}</p>
+                                <p><strong>Created by:</strong> {project.createdBy.username}</p>
                                 <p><strong>Project ID:</strong> {project.id}</p>
                             </div>
 
@@ -791,6 +890,16 @@ function ProjectDetail({ user, onLogout }) {
                     </div>
                 </div>
             )}
+
+            <InviteCollaboratorModal
+                projectId={project.id}
+                isOpen={showInviteModal}
+                onClose={() => setShowInviteModal(false)}
+                onInviteSent={() => {
+                    // Close modal when invite is sent
+                    setShowInviteModal(false)
+                }}
+            />
         </div>
     )
 }

@@ -692,3 +692,121 @@ input:disabled+.slider {
     background: var(--theme-primary);
     color: var(--theme-background);
 }
+
+/* Invite Collaborator Button */
+.invite-collaborator-btn {
+    background: var(--theme-primary);
+    color: var(--theme-background);
+    border: none;
+    padding: 0.9rem 1.5rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.invite-collaborator-btn:hover:not(:disabled) {
+    background: var(--theme-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.invite-collaborator-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Pending Invitations */
+.pending-invitations {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--theme-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--theme-accent);
+}
+
+.pending-invitations h4 {
+    color: var(--theme-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.invite-note {
+    color: var(--theme-text);
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin: 0 0 1rem 0;
+    font-style: italic;
+}
+
+.invitation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem;
+    background: var(--theme-background);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.invitation-item:last-child {
+    margin-bottom: 0;
+}
+
+.invitation-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.invitation-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.invitation-user strong {
+    color: var(--theme-text);
+    font-size: 0.95rem;
+}
+
+.invitation-user .username {
+    color: var(--theme-text);
+    opacity: 0.6;
+    font-size: 0.85rem;
+}
+
+.invitation-message {
+    color: var(--theme-text);
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+.remove-invitation {
+    background: transparent;
+    border: none;
+    color: var(--theme-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.remove-invitation:hover:not(:disabled) {
+    opacity: 1;
+    color: #e74c3c;
+    transform: scale(1.2);
+}
+
+.remove-invitation:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+}

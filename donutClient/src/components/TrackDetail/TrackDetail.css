@@ -301,6 +301,38 @@
     font-weight: 600;
 }
 
+.header-with-play {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.track-title-play-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: var(--theme-primary);
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-left: -1.5rem;
+}
+
+.track-title-play-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.track-title-play-btn:active {
+    transform: scale(1.05);
+}
+
 .section-header p {
     color: #7f8c8d;
     margin: 0;

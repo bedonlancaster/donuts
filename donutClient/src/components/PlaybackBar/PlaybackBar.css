@@ -14,6 +14,36 @@
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.playback-bar.minimized {
+    height: 40px;
+}
+
+.minimize-btn {
+    position: absolute;
+    top: 8px;
+    right: 16px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: var(--theme-secondary);
+    color: var(--theme-text);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    margin-top: 1.2rem;
+}
+
+.minimize-btn:hover {
+    background: var(--theme-primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
 .playback-content {
     display: flex;
     align-items: center;
