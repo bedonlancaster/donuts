@@ -5,11 +5,14 @@ namespace DonutAPI.Models
 {
     public enum CollaboratorRole
     {
-        Producer = 1,
-        Artist = 2,
-        Engineer = 3,
-        Songwriter = 4,
-        Vocalist = 5
+        Artist = 1,
+        Producer = 2,
+        Songwriter = 3,
+        Engineer = 4,
+        MixingEngineer = 5,
+        MasteringEngineer = 6,
+        Management = 7,
+        Label = 8
     }
 
     public enum CollaboratorStatus

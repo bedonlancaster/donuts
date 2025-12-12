@@ -427,13 +427,12 @@ function TrackDetail({ user, onLogout }) {
 
                 <div className="user-profile">
                     <div className="profile-avatar">
-                        {user.displayName.charAt(0).toUpperCase()}
+                        {user.username.charAt(0).toUpperCase()}
                     </div>
                     <div className="profile-info">
-                        <div className="profile-name">{user.displayName}</div>
+                        <div className="profile-name">{user.username}</div>
                         <div className="profile-role">
-                            {user.isProducer && user.isArtist ? 'Producer & Artist' :
-                                user.isProducer ? 'Producer' : 'Artist'}
+                            Collaborator
                         </div>
                     </div>
                     <button className="logout-btn" onClick={handleLogout}>
@@ -462,7 +461,7 @@ function TrackDetail({ user, onLogout }) {
                                 </div>
                             )}
                             <p className="track-meta">
-                                Track #{track.orderIndex} • Uploaded by {track.uploadedBy?.displayName}
+                                Track #{track.orderIndex} • Uploaded by {track.uploadedBy?.username}
                                 {track.duration && ` • ${formatDuration(track.duration)}`}
                             </p>
                             <button
@@ -505,7 +504,7 @@ function TrackDetail({ user, onLogout }) {
 
                             <div className="detail-item">
                                 <label>Uploaded By</label>
-                                <span>{track.uploadedBy?.displayName || 'Unknown'}</span>
+                                <span>{track.uploadedBy?.username || 'Unknown'}</span>
                             </div>
                         </div>
 
@@ -525,7 +524,16 @@ function TrackDetail({ user, onLogout }) {
                 {activeTab === 'hitlist' && (
                     <div className="hitlist-section">
                         <div className="section-header">
-                            <h2>{track.title}</h2>
+                            <div className="header-with-play">
+                                <button
+                                    className="track-title-play-btn"
+                                    onClick={handlePlayTrack}
+                                    title={currentTrack && currentTrack.id === track.id && isPlaying ? 'Pause' : 'Play'}
+                                >
+                                    {currentTrack && currentTrack.id === track.id && isPlaying ? '⏸' : '▶'}
+                                </button>
+                                <h2>{track.title}</h2>
+                            </div>
                             <p>Create a Hit List to get things DONE</p>
                         </div>
                         <KanbanHitList

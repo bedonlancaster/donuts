@@ -4,13 +4,11 @@ import './RegisterForm.css'
 function RegisterForm({ onBack, onSuccess }) {
     const [formData, setFormData] = useState({
         email: '',
-        username: '', // Add username field
-        displayName: '',
+        username: '',
         password: '',
         confirmPassword: '',
         firstName: '',
-        lastName: '',
-        userType: 1 // 1 = Producer, 2 = Artist
+        lastName: ''
     })
 
     const [errors, setErrors] = useState({})
@@ -20,7 +18,7 @@ function RegisterForm({ onBack, onSuccess }) {
         const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
-            [name]: name === 'userType' ? parseInt(value) : value
+            [name]: value
         }))
 
         // Clear error when user starts typing
@@ -60,11 +58,8 @@ function RegisterForm({ onBack, onSuccess }) {
             /\S+@\S+\.\S+/.test(formData.email) &&
             formData.username &&
             formData.username.length >= 3 &&
-            formData.displayName &&
-            formData.displayName.trim().length >= 2 &&
             formData.firstName &&
             formData.lastName &&
-            formData.userType &&
             passwordValidation.isValid &&
             formData.confirmPassword &&
             formData.password === formData.confirmPassword
@@ -80,13 +75,8 @@ function RegisterForm({ onBack, onSuccess }) {
         if (!formData.username) newErrors.username = 'Username is required'
         else if (formData.username.length < 3) newErrors.username = 'Username must be at least 3 characters'
 
-        if (!formData.displayName) newErrors.displayName = 'Display name is required'
-        else if (formData.displayName.trim().length < 2) newErrors.displayName = 'Display name must be at least 2 characters'
-
         if (!formData.firstName) newErrors.firstName = 'First name is required'
         if (!formData.lastName) newErrors.lastName = 'Last name is required'
-
-        if (!formData.userType) newErrors.userType = 'Please select your role'
 
         if (!formData.password) {
             newErrors.password = 'Password is required'
@@ -119,25 +109,13 @@ function RegisterForm({ onBack, onSuccess }) {
         setErrors({})
 
         try {
-            // Convert userType to roles array (using enum values)
-            let roles = []
-            if (formData.userType === 1) {
-                // Producer gets both Producer (1) and Artist (2) roles
-                roles = [1, 2]
-            } else if (formData.userType === 2) {
-                // Artist gets only Artist (2) role
-                roles = [2]
-            }
-
             // Create API payload without confirmPassword
             const apiData = {
                 email: formData.email,
                 username: formData.username,
-                displayName: formData.displayName,
                 password: formData.password,
                 firstName: formData.firstName,
-                lastName: formData.lastName,
-                roles: roles
+                lastName: formData.lastName
             }
 
             const response = await fetch('http://localhost:5000/api/auth/register', {
@@ -196,40 +174,6 @@ function RegisterForm({ onBack, onSuccess }) {
                 )}
 
                 <form onSubmit={handleSubmit} className="register-form">
-                    {/* User Type Selection */}
-                    <div className="form-group user-type-group">
-                        <label className="form-label">Choose:</label>
-                        <div className="user-type-options">
-                            <label className={`user-type-option ${formData.userType === 1 ? 'selected' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="userType"
-                                    value="1"
-                                    checked={formData.userType === 1}
-                                    onChange={handleChange}
-                                />
-                                <span className="user-type-text">
-                                    Producer
-                                    <small>I create beats, mix tracks, and produce music (includes Artist role)</small>
-                                </span>
-                            </label>
-
-                            <label className={`user-type-option ${formData.userType === 2 ? 'selected' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="userType"
-                                    value="2"
-                                    checked={formData.userType === 2}
-                                    onChange={handleChange}
-                                />
-                                <span className="user-type-text">
-                                    Artist
-                                    <small>I write lyrics, sing, rap, and perform music</small>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
                     {/* Name Fields */}
                     <div className="form-group">
                         <label htmlFor="firstName" className="form-label">First Name</label>
@@ -287,22 +231,6 @@ function RegisterForm({ onBack, onSuccess }) {
                             placeholder="Choose a unique username"
                         />
                         {errors.username && <span className="error-message">{errors.username}</span>}
-                    </div>
-
-                    {/* Display Name */}
-                    <div className="form-group">
-                        <label htmlFor="displayName" className="form-label">Display Name</label>
-                        <input
-                            type="text"
-                            id="displayName"
-                            name="displayName"
-                            value={formData.displayName}
-                            onChange={handleChange}
-                            className={`form-input ${errors.displayName ? 'error' : ''}`}
-                            placeholder="What you want to go by"
-                        />
-                        {errors.displayName && <span className="error-message">{errors.displayName}</span>}
-                        <span className="field-hint">This is how your name will appear on projects and collaborations</span>
                     </div>
 
                     {/* Password */}

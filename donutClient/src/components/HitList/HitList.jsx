@@ -1,16 +1,49 @@
 import React, { useState, useEffect } from 'react'
+import { useAudioPlayer } from '../../context/AudioPlayerContext'
 import './HitList.css'
 
 function HitList({ projectId, trackId }) {
     const [items, setItems] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [focusKey, setFocusKey] = useState(null) // To trigger focus on specific input
+    const [currentTrack, setCurrentTrack] = useState(null)
+    const { currentTrack: playingTrack, isPlaying, togglePlayPause, playTrack } = useAudioPlayer()
 
     // Determine the API endpoint based on props
     const isTrackLevel = trackId !== undefined
     const apiEndpoint = isTrackLevel
         ? `http://localhost:5000/api/hitlistitems/track/${trackId}`
         : `http://localhost:5000/api/hitlistitems/project/${projectId}`
+
+    // Fetch track data if we're at track level
+    useEffect(() => {
+        if (isTrackLevel && trackId) {
+            const fetchTrack = async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
+                        credentials: 'include'
+                    })
+                    if (response.ok) {
+                        const track = await response.json()
+                        setCurrentTrack(track)
+                    }
+                } catch (err) {
+                    console.error('Error fetching track:', err)
+                }
+            }
+            fetchTrack()
+        }
+    }, [trackId, isTrackLevel])
+
+    const handlePlayTrack = () => {
+        if (currentTrack) {
+            if (playingTrack?.id === currentTrack.id && isPlaying) {
+                togglePlayPause()
+            } else {
+                playTrack(currentTrack)
+            }
+        }
+    }
 
     // Load hit list items from backend
     useEffect(() => {
@@ -216,7 +249,18 @@ function HitList({ projectId, trackId }) {
     return (
         <div className="hit-list">
             <div className="hit-list-header">
-                <h3>{isTrackLevel ? 'Track Hit List' : 'Hit List'}</h3>
+                <div className="header-left">
+                    {isTrackLevel && currentTrack && (
+                        <button
+                            className="track-play-btn"
+                            onClick={handlePlayTrack}
+                            title={playingTrack?.id === currentTrack.id && isPlaying ? 'Pause track' : 'Play track'}
+                        >
+                            {playingTrack?.id === currentTrack.id && isPlaying ? '⏸' : '▶'}
+                        </button>
+                    )}
+                    <h3>{isTrackLevel && currentTrack ? currentTrack.title : 'Hit List'}</h3>
+                </div>
                 <button className="add-item-btn" onClick={addNewItem}>
                     + Add Item
                 </button>

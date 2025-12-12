@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import donutLogo from '../../assets/donut.logo.actual.png'
+import donutsText from '../../assets/donuts.text.actual.png'
+import InvitationNotifications from '../InvitationNotifications/InvitationNotifications'
 import './Dashboard.css'
 
 function Dashboard({ user, onLogout }) {
@@ -11,6 +13,8 @@ function Dashboard({ user, onLogout }) {
     const [projects, setProjects] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [showInvitations, setShowInvitations] = useState(false)
+    const [invitationCount, setInvitationCount] = useState(0)
 
     // Fetch user's projects from the API and reset theme on mount
     useEffect(() => {
@@ -38,7 +42,73 @@ function Dashboard({ user, onLogout }) {
             }
         }
         fetchProjects()
+        fetchInvitationCount()
     }, [resetToDefaultTheme])
+
+    // Fetch pending invitation count
+    const fetchInvitationCount = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/invitations/count/pending', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setInvitationCount(data.count)
+            }
+        } catch (err) {
+            console.error('Error fetching invitation count:', err)
+        }
+    }
+
+    const handleInvitationsClose = () => {
+        setShowInvitations(false)
+        fetchInvitationCount() // Refresh count when closing
+        // Optionally refresh projects if invitations were accepted
+        const fetchProjects = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/projects', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                if (response.ok) {
+                    const projectsData = await response.json()
+                    setProjects(projectsData)
+                }
+            } catch (err) {
+                console.error('Error fetching projects:', err)
+            }
+        }
+        fetchProjects()
+    }
+
+    const handleInvitationAccepted = async () => {
+        // Refresh projects to show the newly accepted project
+        try {
+            const response = await fetch('http://localhost:5000/api/projects', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            if (response.ok) {
+                const projectsData = await response.json()
+                setProjects(projectsData)
+            }
+        } catch (err) {
+            console.error('Error refreshing projects:', err)
+        }
+
+        // Refresh invitation count
+        fetchInvitationCount()
+    }
 
     const handleLogout = async () => {
         try {
@@ -79,12 +149,12 @@ function Dashboard({ user, onLogout }) {
             {/* Main Content Area */}
             <div className="dashboard-main">
                 <div className="content-header">
-                    <h1>DONUTS</h1>
+                    <div className="header-logo-container">
+                        <img src={donutsText} alt="DONUTS" className="dashboard-title-logo" />
+                        <img src={donutLogo} alt="Donut Logo" className="dashboard-donut-logo" />
+                    </div>
                     <p className="content-subtitle">
-                        {user.isProducer
-                            ? "Collaborative projects with people"
-                            : "Projects you're working on with producers"
-                        }
+                        Collaborative projects with people
                     </p>
                 </div>
 
@@ -102,12 +172,18 @@ function Dashboard({ user, onLogout }) {
                         </div>
                     )}
                 </div>
+
+                <InvitationNotifications
+                    isOpen={showInvitations}
+                    onClose={handleInvitationsClose}
+                    onInvitationAccepted={handleInvitationAccepted}
+                />
             </div>
 
             {/* Right Sidebar Navigation */}
             <div className="dashboard-sidebar">
                 <div className="sidebar-header">
-                    <div className="logo">DONUTS</div>
+                    <div className="logo"></div>
                 </div>
 
                 <nav className="sidebar-nav">
@@ -116,6 +192,15 @@ function Dashboard({ user, onLogout }) {
                         onClick={() => setSelectedSection('donuts')}
                     >
                         My DONUTS
+                    </button>
+                    <button
+                        className="nav-item nav-item-sub invitations-btn"
+                        onClick={() => setShowInvitations(true)}
+                    >
+                        Invitations
+                        {invitationCount > 0 && (
+                            <span className="invitation-badge">{invitationCount}</span>
+                        )}
                     </button>
                     {/* <button
                         className={`nav-item ${selectedSection === 'sessions' ? 'active' : ''}`}
@@ -143,19 +228,16 @@ function Dashboard({ user, onLogout }) {
                 <div className="sidebar-footer">
                     <div className="user-profile">
                         <div className="profile-avatar">
-                            {user.displayName.charAt(0).toUpperCase()}
+                            {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div className="profile-info">
-                            <div className="profile-name">{user.displayName}</div>
-                            <div className="profile-role">
-                                {user.isProducer && user.isArtist ? 'Producer & Artist' :
-                                    user.isProducer ? 'Producer' : 'Artist'}
-                            </div>
+                            <div className="profile-name">{user.username}</div>
+                            <div className="profile-role">Collaborator</div>
                         </div>
-                        <button className="logout-btn" onClick={handleLogout}>
-                            Logout
-                        </button>
                     </div>
+                    <button className="logout-btn" onClick={handleLogout}>
+                        Logout
+                    </button>
                 </div>
             </div>
         </div>

@@ -63,4 +63,30 @@ namespace DonutAPI.DTOs
     {
         public DateTime? CompletedAt { get; set; } = DateTime.UtcNow;
     }
+
+    // For creating a new comment
+    public class CreateHitListItemCommentDto
+    {
+        [Required]
+        [StringLength(2000, MinimumLength = 1)]
+        public string Text { get; set; } = string.Empty;
+    }
+
+    // For updating a comment
+    public class UpdateHitListItemCommentDto
+    {
+        [Required]
+        [StringLength(2000, MinimumLength = 1)]
+        public string Text { get; set; } = string.Empty;
+    }
+
+    // For comment responses
+    public class HitListItemCommentDto
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public UserDto Author { get; set; } = null!;
+    }
 }
