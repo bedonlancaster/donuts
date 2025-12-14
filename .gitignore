@@ -1,5 +1,10 @@
 # Audio uploads - don't commit large binary files
 donutAPI/uploads/
+donutAPI/wwwroot/uploads/artwork
+
+# local dev
+.claude
+donutAPI/.config
 
 # .NET Core
 bin/
