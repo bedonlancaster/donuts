@@ -127,6 +127,7 @@
 .btn-secondary:hover {
     background: var(--primary-coral);
     color: white;
+    border-color: var(--primary-coral);
     transform: translateY(-2px);
     box-shadow: 0 12px 35px var(--shadow);
 }

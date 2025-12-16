@@ -169,7 +169,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
                     </div>
                 </div>
                 <div className="header-right">
-                    <span className="user-name">{user.displayName}</span>
+                    <span className="user-name">{user.username}</span>
                     <button className="logout-btn" onClick={handleLogout}>
                         Logout
                     </button>

@@ -46,7 +46,9 @@ function AppContent() {
   }
 
   const handleRegistrationSuccess = (userData) => {
-    navigate('/')
+    setUser(userData)
+    localStorage.setItem('user', JSON.stringify(userData))
+    navigate('/dashboard')
   }
 
   const handleCreateDonutSuccess = (newDonut) => {

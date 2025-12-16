@@ -400,6 +400,150 @@ namespace DonutAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "Items reordered successfully" });
         }
+
+        // GET: api/hitlistitems/{id}/comments
+        [HttpGet("{id}/comments")]
+        public async Task<ActionResult<IEnumerable<HitListItemCommentDto>>> GetComments(int id)
+        {
+            var hitListItem = await _context.HitListItems
+                .FirstOrDefaultAsync(h => h.Id == id);
+
+            if (hitListItem == null)
+            {
+                return NotFound("Hit list item not found");
+            }
+
+            var comments = await _context.HitListItemComments
+                .Include(c => c.User)
+                .Where(c => c.HitListItemId == id)
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new HitListItemCommentDto
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    Author = c.User.ToUserDto()
+                })
+                .ToListAsync();
+
+            return Ok(comments);
+        }
+
+        // POST: api/hitlistitems/{id}/comments
+        [HttpPost("{id}/comments")]
+        public async Task<ActionResult<HitListItemCommentDto>> CreateComment(int id, CreateHitListItemCommentDto createCommentDto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var hitListItem = await _context.HitListItems
+                .FirstOrDefaultAsync(h => h.Id == id);
+
+            if (hitListItem == null)
+            {
+                return NotFound("Hit list item not found");
+            }
+
+            var comment = new HitListItemComment
+            {
+                HitListItemId = id,
+                UserId = user.Id,
+                Text = createCommentDto.Text,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.HitListItemComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            // Reload with user data
+            await _context.Entry(comment).Reference(c => c.User).LoadAsync();
+
+            var commentDto = new HitListItemCommentDto
+            {
+                Id = comment.Id,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt,
+                UpdatedAt = comment.UpdatedAt,
+                Author = comment.User.ToUserDto()
+            };
+
+            return CreatedAtAction(nameof(GetComments), new { id = hitListItem.Id }, commentDto);
+        }
+
+        // PUT: api/hitlistitems/comments/{commentId}
+        [HttpPut("comments/{commentId}")]
+        public async Task<ActionResult<HitListItemCommentDto>> UpdateComment(int commentId, UpdateHitListItemCommentDto updateCommentDto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var comment = await _context.HitListItemComments
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == commentId);
+
+            if (comment == null)
+            {
+                return NotFound("Comment not found");
+            }
+
+            // Only the author can edit their comment
+            if (comment.UserId != user.Id)
+            {
+                return Forbid();
+            }
+
+            comment.Text = updateCommentDto.Text;
+            comment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var commentDto = new HitListItemCommentDto
+            {
+                Id = comment.Id,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt,
+                UpdatedAt = comment.UpdatedAt,
+                Author = comment.User.ToUserDto()
+            };
+
+            return Ok(commentDto);
+        }
+
+        // DELETE: api/hitlistitems/comments/{commentId}
+        [HttpDelete("comments/{commentId}")]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var comment = await _context.HitListItemComments.FindAsync(commentId);
+
+            if (comment == null)
+            {
+                return NotFound("Comment not found");
+            }
+
+            // Only the author can delete their comment
+            if (comment.UserId != user.Id)
+            {
+                return Forbid();
+            }
+
+            _context.HitListItemComments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 
     // DTO for batch reordering

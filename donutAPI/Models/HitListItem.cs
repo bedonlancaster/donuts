@@ -71,5 +71,7 @@ namespace DonutAPI.Models
 
         [ForeignKey("CreatedById")]
         public virtual User CreatedBy { get; set; } = null!;
+
+        public virtual ICollection<HitListItemComment> Comments { get; set; } = new List<HitListItemComment>();
     }
 }
