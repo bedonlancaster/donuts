@@ -19,21 +19,21 @@
     height: auto;
     object-fit: contain;
     animation: spin 8s linear infinite;
-    filter: drop-shadow(0 10px 30px var(--shadow));
+    filter: drop-shadow(0 10px 30px var(--brand-shadow));
     margin-bottom: 1rem;
     margin-left: -10px;
     /* Nudge left to center better */
 }
 
 .spinning-logo:hover {
-    filter: drop-shadow(0 15px 40px var(--shadow));
+    filter: drop-shadow(0 15px 40px var(--brand-shadow));
 }
 
 .donuts-text {
     width: 400px;
     height: auto;
     object-fit: contain;
-    filter: drop-shadow(0 5px 15px var(--shadow));
+    filter: drop-shadow(0 5px 15px var(--brand-shadow));
 }
 
 @keyframes spin {
@@ -54,14 +54,14 @@
 .hero-title {
     font-size: 3.5rem;
     font-weight: 700;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     margin-bottom: 1rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .hero-subtitle {
     font-size: 1.3rem;
-    color: var(--text-dark);
+    color: var(--brand-text);
     margin-bottom: 2.5rem;
     line-height: 1.6;
     max-width: 500px;
@@ -107,29 +107,29 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-coral), var(--dark-coral));
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
     color: white;
-    box-shadow: 0 8px 25px var(--shadow);
+    box-shadow: 0 8px 25px var(--brand-shadow);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 35px var(--shadow);
+    box-shadow: 0 12px 35px var(--brand-shadow);
 }
 
 .btn-secondary {
-    background: var(--white);
-    color: var(--primary-coral);
-    border: 2px solid var(--primary-coral);
+    background: var(--brand-white);
+    color: var(--brand-primary);
+    border: 2px solid var(--brand-primary);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover {
-    background: var(--primary-coral);
+    background: var(--brand-primary);
     color: white;
-    border-color: var(--primary-coral);
+    border-color: var(--brand-primary);
     transform: translateY(-2px);
-    box-shadow: 0 12px 35px var(--shadow);
+    box-shadow: 0 12px 35px var(--brand-shadow);
 }
 
 /* Animations */

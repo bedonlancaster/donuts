@@ -3,10 +3,10 @@
 .auth-container {
     width: 100%;
     max-width: 400px;
-    background: var(--white);
+    background: var(--brand-white);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 20px 60px var(--shadow);
+    box-shadow: 0 20px 60px var(--brand-shadow);
     position: relative;
     animation: fadeInUp 0.6s ease-out;
 }
@@ -17,7 +17,7 @@
     left: 20px;
     background: none;
     border: none;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     font-size: 1.1rem;
     cursor: pointer;
     padding: 8px;
@@ -26,7 +26,7 @@
 }
 
 .back-btn:hover {
-    background: var(--light-pink);
+    background: var(--brand-light);
 }
 
 .auth-form {
@@ -35,13 +35,13 @@
 }
 
 .auth-form h2 {
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     margin-bottom: 1rem;
     font-size: 2rem;
 }
 
 .auth-form p {
-    color: var(--text-dark);
+    color: var(--brand-text);
     font-size: 1.1rem;
 }
 
@@ -67,31 +67,31 @@
 
 .form-label {
     font-weight: 600;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     font-size: 0.9rem;
 }
 
 .form-input {
     padding: 10px 14px;
-    border: 2px solid #E0E0E0;
+    border: 2px solid var(--brand-border);
     border-radius: 10px;
     font-size: 0.95rem;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     transition: border-color 0.3s ease;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: var(--primary-coral);
-    box-shadow: 0 0 0 3px rgba(232, 122, 122, 0.1);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-border-focus);
 }
 
 .form-input.error {
-    border-color: #E74C3C;
+    border-color: var(--error-color);
 }
 
 .form-input::placeholder {
-    color: #B0B0B0;
+    color: var(--placeholder-color);
 }
 
 .form-input:disabled {
@@ -101,7 +101,7 @@
 
 .submit-btn {
     padding: 12px;
-    background: linear-gradient(135deg, var(--primary-coral), var(--dark-coral));
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
     color: white;
     border: none;
     border-radius: 10px;
@@ -114,7 +114,7 @@
 
 .submit-btn:hover:not(.disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(232, 122, 122, 0.3);
+    box-shadow: 0 8px 25px var(--brand-shadow);
 }
 
 .submit-btn.disabled {
@@ -124,15 +124,15 @@
 }
 
 .error-message {
-    color: #E74C3C;
+    color: var(--error-color);
     font-size: 0.85rem;
     margin-top: 0.25rem;
 }
 
 .general-error {
     padding: 10px;
-    background: #FFEBEE;
-    border: 1px solid #FFCDD2;
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
     border-radius: 8px;
     text-align: center;
     margin-bottom: 1rem;
@@ -141,9 +141,9 @@
 .form-placeholder {
     margin-top: 2rem;
     padding: 2rem;
-    background: var(--light-pink);
+    background: var(--brand-light);
     border-radius: 15px;
-    border: 2px dashed var(--primary-coral);
+    border: 2px dashed var(--brand-primary);
 }
 
 .form-placeholder p {

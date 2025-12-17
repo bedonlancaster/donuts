@@ -1,7 +1,7 @@
 /* Register Form Specific Styles */
 
 .auth-subtitle {
-    color: var(--text-dark);
+    color: var(--brand-text);
     font-size: 1rem;
     margin-bottom: 1.5rem;
     opacity: 0.8;
@@ -32,34 +32,34 @@
 /* Labels */
 .form-label {
     font-weight: 600;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     font-size: 0.9rem;
 }
 
 /* Input Styles */
 .form-input {
     padding: 10px 14px;
-    border: 2px solid #E0E0E0;
+    border: 2px solid var(--brand-border);
     border-radius: 10px;
     font-size: 0.95rem;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     transition: all 0.3s ease;
-    background: var(--white);
+    background: var(--brand-white);
 }
 
 .form-input:focus {
     outline: none;
-    border-color: var(--primary-coral);
-    box-shadow: 0 0 0 3px rgba(232, 122, 122, 0.1);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-border-focus);
 }
 
 .form-input.error {
-    border-color: #E74C3C;
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 3px var(--brand-border-focus);
 }
 
 .form-input::placeholder {
-    color: #B0B0B0;
+    color: var(--placeholder-color);
 }
 
 /* User Type Selection */
@@ -76,23 +76,23 @@
 .user-type-option {
     flex: 1;
     padding: 1rem;
-    border: 2px solid #E0E0E0;
+    border: 2px solid var(--brand-border);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: var(--white);
+    background: var(--brand-white);
     text-align: center;
 }
 
 .user-type-option:hover {
-    border-color: var(--dark-coral);
-    background: var(--light-pink);
+    border-color: var(--brand-dark);
+    background: var(--brand-light);
 }
 
 .user-type-option.selected {
-    border-color: var(--dark-coral);
-    background: var(--light-pink);
-    box-shadow: 0 0 0 3px rgba(214, 107, 107, 0.2);
+    border-color: var(--brand-dark);
+    background: var(--brand-light);
+    box-shadow: 0 0 0 3px var(--brand-shadow);
 }
 
 .user-type-option input[type="radio"] {
@@ -102,7 +102,7 @@
 .user-type-text {
     display: block;
     font-weight: 600;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
 }
 
 .user-type-text small {
@@ -116,7 +116,7 @@
 /* Submit Button */
 .submit-btn {
     padding: 12px;
-    background: linear-gradient(135deg, var(--primary-coral), var(--dark-coral));
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
     color: white;
     border: none;
     border-radius: 10px;
@@ -133,7 +133,7 @@
 
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px var(--shadow);
+    box-shadow: 0 8px 25px var(--brand-shadow);
 }
 
 .submit-btn:disabled {
@@ -192,14 +192,14 @@
 
 /* Error Messages */
 .error-message {
-    color: #E74C3C;
+    color: var(--error-color);
     font-size: 0.85rem;
     margin-top: 0.25rem;
 }
 
 .general-error {
     background: #FCF2F2;
-    border: 1px solid #E74C3C;
+    border: 1px solid var(--error-color);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 1rem;
@@ -210,9 +210,9 @@
 .password-requirements {
     margin-top: 0.5rem;
     padding: 10px;
-    background: #F8F9FA;
+    background: var(--brand-background);
     border-radius: 8px;
-    border: 1px solid #E0E0E0;
+    border: 1px solid var(--brand-border);
 }
 
 .requirements-header {
@@ -225,7 +225,7 @@
 .requirements-title {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--brand-text);
 }
 
 .password-strength {
@@ -234,15 +234,15 @@
 }
 
 .strength-indicator.weak {
-    color: #E74C3C;
+    color: var(--error-color);
 }
 
 .strength-indicator.good {
-    color: #F39C12;
+    color: var(--warning-color);
 }
 
 .strength-indicator.strong {
-    color: #27AE60;
+    color: var(--success-color);
 }
 
 .requirements-list {
@@ -261,18 +261,18 @@
 }
 
 .requirement.met {
-    color: #27AE60;
+    color: var(--success-color);
     font-weight: 500;
 }
 
 .requirement.unmet {
-    color: #95A5A6;
+    color: var(--brand-text-light);
 }
 
 .password-success {
     padding: 8px 12px;
-    background: #D5EDDA;
-    border: 1px solid #C3E6CB;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
     border-radius: 6px;
     color: #155724;
     font-size: 0.85rem;
@@ -300,11 +300,11 @@
 }
 
 .password-match.match {
-    color: #27AE60;
+    color: var(--success-color);
 }
 
 .password-match.no-match {
-    color: #E74C3C;
+    color: var(--error-color);
 }
 
 /* Responsive Design */
@@ -357,7 +357,7 @@
     display: flex;
     align-items: center;
     padding: 0.75rem;
-    border: 2px solid #E0E0E0;
+    border: 2px solid var(--brand-border);
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -365,16 +365,16 @@
 }
 
 .role-option:hover {
-    border-color: var(--primary-coral);
+    border-color: var(--brand-primary);
     background: #FFF8F7;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .role-option.selected {
-    border-color: var(--primary-coral);
+    border-color: var(--brand-primary);
     background: linear-gradient(135deg, #FFF8F7, #FFEFED);
-    box-shadow: 0 4px 15px rgba(255, 127, 127, 0.2);
+    box-shadow: 0 4px 15px var(--brand-shadow);
 }
 
 .role-icon {
@@ -390,7 +390,7 @@
 .role-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--brand-text);
     margin-bottom: 0.15rem;
 }
 
@@ -402,7 +402,7 @@
 
 .role-checkbox {
     font-size: 1.5rem;
-    color: var(--primary-coral);
+    color: var(--brand-primary);
     font-weight: bold;
     flex-shrink: 0;
     margin-left: 1rem;
