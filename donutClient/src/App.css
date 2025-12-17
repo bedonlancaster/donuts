@@ -1,28 +1,49 @@
 /*
- * Brand Theme Variables
+ * DONUTS CSS VARIABLE SYSTEM
  *
- * These define the fixed brand identity used in auth components (AuthForm, RegisterForm, LandingPage).
- * Unlike project themes (--theme-*), brand colors are consistent across the app.
- * Currently locked to Coral palette in light mode.
+ * --brand-* : Auth pages (login, register, landing) - Coral palette, static
+ * --theme-* : Project pages (dashboard, projects, tracks) - Dynamic, 10 palettes
+ *
  */
 :root {
-  /* Primary brand colors */
-  --brand-primary: #E87A7A;
-  --brand-primary-hover: #D66B6B;
-  --brand-light: #FFE5E5;
-  --brand-soft: #F5E6E8;
-  --brand-white: #FFFFFF;
-  --brand-text: #4A4A4A;
+  /* ===== BRAND THEME ===== */
+  /* Used on: AuthForm, RegisterForm, LandingPage */
+
+  /* Primary Brand Colors */
+  --brand-primary: #e87a7a; /* Main coral */
+  --brand-dark: #d66b6b; /* Darker coral */
+  --brand-light: #ffe5e5; /* Light pink */
+  --brand-soft: #f5e6e8; /* Soft pink */
+
+  /* Neutral Colors */
+  --brand-white: #ffffff;
+  --brand-text: #4a4a4a;
+  --brand-text-light: #7f8c8d;
+
+  /* UI Elements */
+  --brand-border: #e0e0e0;
+  --brand-border-focus: rgba(232, 122, 122, 0.1);
   --brand-shadow: rgba(232, 122, 122, 0.2);
+  --brand-background: #fff5f8;
 
-  /* State colors */
-  --error-color: #dc3545;
-  --success-color: #28a745;
-  --warning-color: #ffc107;
+  /* State Colors (Global) */
+  --error-color: #e74c3c;
+  --error-bg: #ffebee;
+  --error-border: #ffcdd2;
 
-  /* Legacy aliases - DO NOT USE IN NEW CODE */
+  --success-color: #27ae60;
+  --success-bg: #d5edda;
+  --success-border: #c3e6cb;
+
+  --warning-color: #f39c12;
+  --warning-bg: #fff3cd;
+  --warning-border: #ffeaa7;
+
+  --placeholder-color: #b0b0b0;
+
+  /* Legacy aliases for backward compatibility (TODO: remove after migration) */
   --primary-coral: var(--brand-primary);
-  --dark-coral: var(--brand-primary-hover);
+  --dark-coral: var(--brand-dark);
   --light-pink: var(--brand-light);
   --soft-pink: var(--brand-soft);
   --white: var(--brand-white);
