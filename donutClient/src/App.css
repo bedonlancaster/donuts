@@ -1,12 +1,33 @@
-/* Global Color Palette */
+/*
+ * Brand Theme Variables
+ *
+ * These define the fixed brand identity used in auth components (AuthForm, RegisterForm, LandingPage).
+ * Unlike project themes (--theme-*), brand colors are consistent across the app.
+ * Currently locked to Coral palette in light mode.
+ */
 :root {
-  --primary-coral: #E87A7A;
-  --light-pink: #FFE5E5;
-  --soft-pink: #F5E6E8;
-  --white: #FFFFFF;
-  --dark-coral: #D66B6B;
-  --text-dark: #4A4A4A;
-  --shadow: rgba(232, 122, 122, 0.2);
+  /* Primary brand colors */
+  --brand-primary: #E87A7A;
+  --brand-primary-hover: #D66B6B;
+  --brand-light: #FFE5E5;
+  --brand-soft: #F5E6E8;
+  --brand-white: #FFFFFF;
+  --brand-text: #4A4A4A;
+  --brand-shadow: rgba(232, 122, 122, 0.2);
+
+  /* State colors */
+  --error-color: #dc3545;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+
+  /* Legacy aliases - DO NOT USE IN NEW CODE */
+  --primary-coral: var(--brand-primary);
+  --dark-coral: var(--brand-primary-hover);
+  --light-pink: var(--brand-light);
+  --soft-pink: var(--brand-soft);
+  --white: var(--brand-white);
+  --text-dark: var(--brand-text);
+  --shadow: var(--brand-shadow);
 }
 
 /* Global Reset and Base Styles */
@@ -18,7 +39,7 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--light-pink);
+  background: var(--brand-light);
   min-height: 100vh;
   overflow-x: hidden;
 }

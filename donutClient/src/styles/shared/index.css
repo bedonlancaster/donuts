@@ -1,0 +1,12 @@
+/* ===== SHARED CSS UTILITIES ===== */
+/* Central import file for all shared styles */
+/* Imported by: /src/index.css */
+
+@import './animations.css';
+@import './states.css';
+@import './cards.css';
+
+/* Day 2 additions will be imported below: */
+/* @import './buttons.css'; */
+/* @import './forms.css'; */
+/* @import './modals.css'; */
