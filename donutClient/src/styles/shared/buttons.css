@@ -76,7 +76,7 @@
 .btn-theme-outline {
   background: transparent;
   color: var(--theme-primary);
-  border: 2px solid var(--theme-primary);
+  border: 1px solid var(--theme-primary);
 }
 
 .btn-theme-outline:hover {

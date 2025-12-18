@@ -526,7 +526,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                     <div className="form-section full-width">
                         <button
                             type="submit"
-                            className={`submit-btn ${!isFormValid() || isLoading ? 'disabled' : ''}`}
+                            className="btn-theme-primary submit-btn"
                             disabled={!isFormValid() || isLoading}
                         >
                             {isLoading ? 'Creating DONUT...' : 'Create DONUT'}
