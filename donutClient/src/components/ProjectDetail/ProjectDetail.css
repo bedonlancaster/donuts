@@ -89,28 +89,6 @@
     /* Use theme text color for readability */
 }
 
-/* Loading and Error States */
-.loading-container,
-.error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-}
-
-.loading-message {
-    color: var(--theme-primary);
-    font-size: 1.2rem;
-}
-
-.error-message {
-    color: #e74c3c;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-}
-
 /* Project Header - adapts background to theme mode */
 .project-header {
     background: var(--background);
@@ -366,22 +344,6 @@
     margin-left: 1.45rem;
 }
 
-.add-btn {
-    background: var(--theme-primary);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.add-btn:hover {
-    background: var(--dark-coral);
-    transform: translateY(-1px);
-}
 
 /* Tracks Section */
 .tracks-list {
@@ -711,53 +673,6 @@
     font-size: 0.9rem;
 }
 
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 30px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--theme-secondary);
-    transition: 0.3s;
-    border-radius: 30px;
-    border: 2px solid var(--theme-primary);
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background: var(--theme-primary);
-    transition: 0.3s;
-    border-radius: 50%;
-}
-
-input:checked+.slider {
-    background: var(--theme-primary);
-}
-
-input:checked+.slider:before {
-    transform: translateX(28px);
-    background: white;
-}
-
 /* Theme Cycle Button */
 .theme-cycle-btn {
     width: 60px;
@@ -813,30 +728,6 @@ input:checked+.slider:before {
 .theme-preview-box p {
     color: inherit;
     opacity: 0.8;
-}
-
-/* Empty States */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 3rem;
-    color: var(--theme-text);
-}
-
-.empty-state h3 {
-    color: var(--theme-primary);
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
-.empty-state p {
-    color: #7f8c8d;
-    font-size: 1rem;
-    margin: 0;
 }
 
 /* Responsive Design */

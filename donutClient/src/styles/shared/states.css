@@ -70,6 +70,16 @@
 }
 
 /* Theme-aware empty state (for project pages) */
+.empty-state-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem;
+  color: var(--theme-text);
+}
+
 .empty-state-theme h3 {
   color: var(--theme-primary);
 }
