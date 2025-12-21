@@ -1,0 +1,118 @@
+/*
+ * Shared Modal Styles
+ */
+
+/* Modal Overlay (Backdrop) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Modal Content Container */
+.modal-content {
+  background: var(--brand-white);
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Size Modifiers */
+.modal-content-sm {
+  max-width: 400px;
+}
+
+.modal-content-lg {
+  max-width: 700px;
+}
+
+.modal-content-xl {
+  max-width: 900px;
+}
+
+/* Modal Header */
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid #e1e8ed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--brand-text);
+}
+
+/* Close Button */
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #7f8c8d;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--brand-text);
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: var(--brand-white);
+}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 24px;
+  border-top: 1px solid #e1e8ed;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: var(--brand-white);
+}
+
+/* Error Message in Modal */
+.modal-error {
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: var(--error-color);
+  margin-top: 16px;
+}
+
+/* Success Message in Modal */
+.modal-success {
+  padding: 12px;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+  color: var(--success-color);
+  margin-top: 16px;
+}

@@ -129,7 +129,7 @@ function Dashboard({ user, onLogout }) {
     const renderDonutCard = (project) => (
         <div
             key={project.id}
-            className="donut-card"
+            className="card"
             onClick={() => navigate(`/project/${project.id}`)}
         >
             <div className="donut-artwork">
@@ -230,7 +230,7 @@ function Dashboard({ user, onLogout }) {
 
                 <div className="sidebar-footer">
                     <div className="user-profile">
-                        <div className="profile-avatar">
+                        <div className="avatar avatar-brand">
                             {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div className="profile-info">

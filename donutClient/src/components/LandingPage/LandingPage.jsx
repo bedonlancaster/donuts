@@ -17,10 +17,10 @@ function LandingPage({ onLogin, onRegister }) {
                 </p> */}
 
                 <div className="auth-buttons">
-                    <button className="btn btn-primary" onClick={onLogin}>
+                    <button className="btn-brand-primary btn-pill" onClick={onLogin}>
                         Log In
                     </button>
-                    <button className="btn btn-secondary" onClick={onRegister}>
+                    <button className="btn-brand-secondary btn-pill" onClick={onRegister}>
                         Register
                     </button>
                 </div>

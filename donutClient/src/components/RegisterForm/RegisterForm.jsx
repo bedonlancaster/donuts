@@ -335,7 +335,7 @@ function RegisterForm({ onBack, onSuccess }) {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className={`submit-btn ${!isFormValid() ? 'disabled' : ''}`}
+                        className="btn-brand-primary"
                         disabled={isLoading || !isFormValid()}
                     >
                         {isLoading ? (

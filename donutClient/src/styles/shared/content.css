@@ -1,0 +1,22 @@
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-name {
+  font-weight: 600;
+  color: var(--theme-text);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.profile-role {
+  font-size: 0.8rem;
+  color: var(--brand-text-light);
+  font-weight: 400;
+  white-space: nowrap;
+}
