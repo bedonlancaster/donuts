@@ -5,7 +5,7 @@ import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import KanbanHitList from '../HitList/KanbanHitList';
 import ProjectHeader from '../ProjectHeader/ProjectHeader';
 import InviteCollaboratorModal from '../InviteCollaborator/InviteCollaboratorModal';
-import donutLogo from '../../assets/donut.logo.actual.png';
+// import donutLogo from '../../assets/donut.logo.actual.png';
 import './ProjectDetail.css';
 
 // Collaborator roles - mapping enum values to display names
@@ -234,19 +234,6 @@ function ProjectDetail({ user, onLogout }) {
       fetchProject();
     }
   }, [projectId]);
-
-  const handleLogout = async () => {
-    try {
-      await fetch('http://localhost:5000/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      onLogout();
-    }
-  };
 
   const handleRoleChange = async (collaboratorId, newRole) => {
     try {
@@ -621,10 +608,7 @@ function ProjectDetail({ user, onLogout }) {
         </div>
 
         <div className="user-profile">
-          <div
-            className="profile-avatar"
-            style={{ background: activeTheme.primary, color: activeTheme.text }}
-          >
+          <div className="avatar avatar-theme">
             {user.username.charAt(0).toUpperCase()}
           </div>
           <div className="profile-info">

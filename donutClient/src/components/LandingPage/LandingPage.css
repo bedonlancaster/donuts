@@ -1,115 +1,111 @@
 /* Landing Page Specific Styles */
 
 .landing-page {
-    text-align: center;
-    max-width: 800px;
-    width: 100%;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
 }
 
 .logo-container {
-    margin-bottom: 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinning-logo {
-    width: 300px;
-    height: auto;
-    object-fit: contain;
-    animation: spin 8s linear infinite;
-    filter: drop-shadow(0 10px 30px var(--brand-shadow));
-    margin-bottom: 1rem;
-    margin-left: -10px;
-    /* Nudge left to center better */
+  width: 300px;
+  height: auto;
+  object-fit: contain;
+  animation: spin 8s linear infinite;
+  filter: drop-shadow(0 10px 30px var(--brand-shadow));
+  margin-bottom: 1rem;
+  margin-left: -10px;
+  /* Nudge left to center better */
 }
 
 .spinning-logo:hover {
-    filter: drop-shadow(0 15px 40px var(--brand-shadow));
+  filter: drop-shadow(0 15px 40px var(--brand-shadow));
 }
 
 .donuts-text {
-    width: 400px;
-    height: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 5px 15px var(--brand-shadow));
+  width: 400px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 15px var(--brand-shadow));
 }
 
 /* spin animation from shared animations.css */
 
 /* Hero Content */
 .hero-content {
-    animation: fadeInUp 1s ease-out 0.5s both;
+  animation: fadeInUp 1s ease-out 0.5s both;
 }
 
 .hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--brand-primary);
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .hero-subtitle {
-    font-size: 1.3rem;
-    color: var(--brand-text);
-    margin-bottom: 2.5rem;
-    line-height: 1.6;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+  font-size: 1.3rem;
+  color: var(--brand-text);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Buttons - using shared .btn-brand-pill classes from buttons.css */
 .auth-buttons {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* fadeInUp animation from shared animations.css */
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.5rem;
-    }
+  .hero-title {
+    font-size: 2.5rem;
+  }
 
-    .hero-subtitle {
-        font-size: 1.1rem;
-        padding: 0 1rem;
-    }
+  .hero-subtitle {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
 
-    .spinning-logo {
-        width: 150px;
-    }
+  .spinning-logo {
+    width: 150px;
+  }
 
-    .donuts-text {
-        width: 180px;
-    }
+  .donuts-text {
+    width: 180px;
+  }
 
-    .auth-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .btn {
-        width: 200px;
-    }
+  .auth-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {
-    .hero-title {
-        font-size: 2rem;
-    }
+  .hero-title {
+    font-size: 2rem;
+  }
 
-    .spinning-logo {
-        width: 120px;
-    }
+  .spinning-logo {
+    width: 120px;
+  }
 
-    .donuts-text {
-        width: 150px;
-    }
+  .donuts-text {
+    width: 150px;
+  }
 }

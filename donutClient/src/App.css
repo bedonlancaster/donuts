@@ -40,15 +40,6 @@
   --warning-border: #ffeaa7;
 
   --placeholder-color: #b0b0b0;
-
-  /* Legacy aliases for backward compatibility (TODO: remove after migration) */
-  --primary-coral: var(--brand-primary);
-  --dark-coral: var(--brand-dark);
-  --light-pink: var(--brand-light);
-  --soft-pink: var(--brand-soft);
-  --white: var(--brand-white);
-  --text-dark: var(--brand-text);
-  --shadow: var(--brand-shadow);
 }
 
 /* Global Reset and Base Styles */

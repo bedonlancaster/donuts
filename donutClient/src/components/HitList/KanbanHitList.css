@@ -63,31 +63,6 @@
     margin-right: auto;
 }
 
-.track-play-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: var(--theme-primary);
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-.track-play-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.track-play-btn:active {
-    transform: scale(1.05);
-}
-
 .track-name {
     font-weight: 600;
     font-size: 1rem;
@@ -350,15 +325,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: auto;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
-}
-
-.card-header {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 .card-badges {
@@ -476,15 +442,6 @@
     background: #fecaca;
     color: #991b1b;
     font-weight: 800;
-}
-
-.card-footer {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
 }
 
 .card-controls {

@@ -127,6 +127,59 @@
   font-size: 1rem;
 }
 
+/* Play Button - Used in HitList components */
+.btn-play {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-play:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-play:active {
+  transform: scale(1.05);
+}
+
+/* ========== Avatar Components ========== */
+
+/* Base avatar - circular user profile picture/initial */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Avatar for brand pages (Dashboard, Landing, etc.) */
+.avatar-brand {
+  background: var(--brand-dark);
+  color: white;
+}
+
+/* Avatar for theme-aware pages (ProjectDetail, TrackDetail, etc.) */
+.avatar-theme {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+}
+
 /* ========== Shape Modifiers ========== */
 
 .btn-circle {
