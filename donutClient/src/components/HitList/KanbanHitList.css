@@ -8,15 +8,6 @@
     background: var(--theme-secondary);
 }
 
-.kanban-loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-    font-size: 1.2rem;
-    color: var(--donut-pink, #e91e63);
-}
-
 /* Progress Bar */
 .kanban-progress {
     margin-bottom: 20px;
@@ -70,31 +61,6 @@
     background: var(--theme-secondary);
     border-radius: 8px;
     margin-right: auto;
-}
-
-.track-play-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: var(--theme-primary);
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-.track-play-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.track-play-btn:active {
-    transform: scale(1.05);
 }
 
 .track-name {
@@ -359,15 +325,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: auto;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
-}
-
-.card-header {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 .card-badges {
@@ -487,15 +444,6 @@
     font-weight: 800;
 }
 
-.card-footer {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
-}
-
 .card-controls {
     display: flex;
     gap: 6px;
@@ -510,24 +458,6 @@
     cursor: pointer;
     transition: all 0.2s;
     font-weight: 600;
-}
-
-.done-btn {
-    background: var(--theme-primary);
-    color: white;
-}
-
-.done-btn:hover {
-    opacity: 0.8;
-}
-
-.edit-btn {
-    background: var(--theme-accent);
-    color: white;
-}
-
-.edit-btn:hover {
-    opacity: 0.8;
 }
 
 .delete-btn {
@@ -661,38 +591,8 @@
     gap: 8px;
 }
 
-.save-btn,
-.cancel-btn {
+.card-actions .btn {
     flex: 1;
-    padding: 8px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.save-btn {
-    background: var(--theme-primary);
-    color: white;
-}
-
-.save-btn:hover:not(:disabled) {
-    opacity: 0.8;
-}
-
-.save-btn:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-}
-
-.cancel-btn {
-    background: var(--theme-accent);
-    color: var(--theme-text);
-}
-
-.cancel-btn:hover {
-    opacity: 0.8;
 }
 
 /* Done Column - Stacked Display */
@@ -848,15 +748,6 @@
     transform: translateX(-2px);
 }
 
-.empty-done {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    color: #9ca3af;
-    font-style: italic;
-}
-
 /* Responsive Design */
 @media (max-width: 1400px) {
     .kanban-board {
@@ -904,18 +795,8 @@
 }
 
 /* Comments Modal */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.kanban-hitlist .modal-overlay {
     z-index: 2000;
-    padding: 20px;
 }
 
 .comments-modal {
@@ -930,11 +811,7 @@
     overflow: hidden;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px 24px;
+.comments-modal .modal-header {
     border-bottom: 2px solid var(--theme-secondary);
 }
 
@@ -950,30 +827,8 @@
     margin-top: 8px;
 }
 
-.modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: var(--theme-text);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: background 0.2s;
-}
-
-.modal-close-btn:hover {
+.comments-modal .modal-close:hover {
     background: var(--theme-secondary);
-}
-
-.modal-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
 }
 
 .modal-description {
@@ -998,11 +853,9 @@
     overflow-y: auto;
 }
 
-.no-comments {
-    text-align: center;
+.comments-list .empty-state-theme {
     color: #9ca3af;
     font-style: italic;
-    padding: 20px;
 }
 
 .comment {
@@ -1041,25 +894,6 @@
     margin-top: 8px;
 }
 
-.comment-edit-btn,
-.comment-delete-btn {
-    padding: 4px 12px;
-    font-size: 0.85rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-    background: var(--theme-secondary);
-    color: var(--theme-text);
-}
-
-.comment-edit-btn:hover,
-.comment-delete-btn:hover {
-    background: var(--theme-primary);
-    color: white;
-}
-
 .comment-edit-mode {
     margin-top: 8px;
 }
@@ -1086,41 +920,6 @@
 .comment-edit-actions {
     display: flex;
     gap: 8px;
-}
-
-.comment-save-btn,
-.comment-cancel-btn {
-    padding: 6px 16px;
-    font-size: 0.9rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 600;
-}
-
-.comment-save-btn {
-    background: var(--theme-primary);
-    color: white;
-}
-
-.comment-save-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.comment-save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.comment-cancel-btn {
-    background: var(--theme-secondary);
-    color: var(--theme-text);
-}
-
-.comment-cancel-btn:hover {
-    background: var(--theme-accent);
 }
 
 .add-comment {
@@ -1151,26 +950,8 @@
     border-color: var(--theme-primary);
 }
 
-.add-comment-btn {
+.add-comment .btn {
     align-self: flex-end;
-    padding: 10px 24px;
-    background: var(--theme-primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.add-comment-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.add-comment-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .card-display-mode {

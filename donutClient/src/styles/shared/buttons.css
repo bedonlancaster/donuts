@@ -1,0 +1,234 @@
+/*
+ * Shared Button Styles
+ * Use .btn as base, then add modifiers for variants
+ */
+
+/* Base Button */
+.btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+  outline: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ========== Brand Variants (Auth Pages) ========== */
+
+.btn-brand-primary {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+  color: var(--brand-white);
+}
+
+.btn-brand-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--brand-shadow);
+}
+
+.btn-brand-secondary {
+  background: var(--brand-white);
+  color: var(--brand-primary);
+  border: 2px solid var(--brand-primary);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.btn-brand-secondary:hover {
+  background: var(--brand-primary);
+  color: var(--brand-white);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px var(--brand-shadow);
+}
+
+/* ========== Theme Variants (Project Pages) ========== */
+
+.btn-theme-primary {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+}
+
+.btn-theme-primary:hover:not(:disabled) {
+  background: var(--theme-accent);
+  transform: translateY(-2px);
+}
+
+.btn-theme-secondary {
+  background: var(--theme-secondary);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-secondary);
+}
+
+.btn-theme-secondary:hover:not(:disabled) {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+}
+
+.btn-theme-outline {
+  background: transparent;
+  color: var(--theme-primary);
+  border: 1px solid var(--theme-primary);
+}
+
+.btn-theme-outline:hover {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+  transform: translateY(-1px);
+}
+
+/* ========== Action Types ========== */
+
+.btn-danger:hover {
+  background: var(--error-color);
+  color: var(--brand-white);
+  border-color: var(--error-color);
+}
+
+/* ========== Size Modifiers ========== */
+
+.btn-sm {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.btn-lg {
+  padding: 18px 24px;
+  font-size: 1.1rem;
+  border-radius: 16px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-sm {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Play Button - Used in HitList components */
+.btn-play {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-play:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-play:active {
+  transform: scale(1.05);
+}
+
+/* ========== Avatar Components ========== */
+
+/* Base avatar - circular user profile picture/initial */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Avatar for brand pages (Dashboard, Landing, etc.) */
+.avatar-brand {
+  background: var(--brand-dark);
+  color: white;
+}
+
+/* Avatar for theme-aware pages (ProjectDetail, TrackDetail, etc.) */
+.avatar-theme {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+}
+
+/* ========== Shape Modifiers ========== */
+
+.btn-circle {
+  border-radius: 50%;
+}
+
+.btn-pill {
+  border-radius: 50px;
+  padding: 15px 40px;
+}
+
+/* ========== Layout Modifiers ========== */
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-block {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ========== Special Effects ========== */
+
+.btn-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-icon:active {
+  transform: scale(1.05);
+}
+
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}

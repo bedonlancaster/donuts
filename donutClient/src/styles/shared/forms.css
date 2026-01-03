@@ -1,0 +1,275 @@
+/*
+ * Shared Form Styles
+ * Use .form-* as base classes with modifiers
+ */
+
+/* Form Group Container */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Labels */
+.form-label {
+  font-weight: 600;
+  color: var(--theme-text, var(--brand-text));
+}
+
+/* Base Input Styles */
+.form-input,
+.form-textarea,
+.form-select {
+  padding: 12px 16px;
+  border: 1px solid var(--theme-secondary, #e0e0e0);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: var(--theme-text, var(--brand-text));
+  background: var(--theme-background, var(--brand-white));
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--theme-primary, var(--brand-primary));
+  box-shadow: 0 0 0 3px rgba(232, 122, 122, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #bdc3c7;
+}
+
+.form-input:disabled,
+.form-textarea:disabled,
+.form-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f8f9fa;
+}
+
+.form-input.error,
+.form-textarea.error,
+.form-select.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+/* Textarea Specific */
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Select Specific */
+.form-select {
+  cursor: pointer;
+}
+
+/* Helper Text & Errors */
+.form-hint {
+  font-size: 0.85rem;
+  color: #95a5a6;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.general-error {
+  padding: 10px;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: var(--error-color);
+}
+
+/* File Upload */
+.file-upload-area {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-input:disabled {
+  cursor: not-allowed;
+}
+
+.file-upload-display {
+  border: 2px dashed var(--theme-secondary, #e0e0e0);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  background: var(--theme-background, var(--brand-white));
+  transition: all 0.2s ease;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload-display:hover {
+  border-color: var(--theme-primary, var(--brand-primary));
+  background: var(--theme-secondary, var(--brand-soft));
+}
+
+/* Checkbox & Radio */
+.checkbox-label,
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.checkbox-label input[type='checkbox'],
+.radio-label input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--theme-primary, var(--brand-primary));
+  cursor: pointer;
+}
+
+/* Custom Radio Cards */
+.radio-card-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-card {
+  flex: 1;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--brand-white);
+  text-align: center;
+}
+
+.radio-card:hover {
+  border-color: var(--brand-primary);
+  background: var(--brand-light);
+}
+
+.radio-card.selected {
+  border-color: var(--brand-primary);
+  background: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(232, 122, 122, 0.2);
+}
+
+.radio-card input[type='radio'] {
+  display: none;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--theme-secondary);
+  border: 2px solid var(--theme-primary);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--theme-primary);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+  background-color: var(--theme-background);
+}
+
+input:disabled + .slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--theme-secondary, #e0e0e0);
+}
+
+/* Validation Indicators */
+.password-requirements {
+  margin-top: 0.5rem;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.requirement {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.requirement.met {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.requirement.unmet {
+  color: #95a5a6;
+}

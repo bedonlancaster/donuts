@@ -114,7 +114,7 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{isQueueMode ? 'Queue Collaborator Invitation' : 'Invite Collaborator'}</h2>
-                    <button className="close-button" onClick={handleClose}>×</button>
+                    <button className="modal-close" onClick={handleClose}>×</button>
                 </div>
 
                 <div className="modal-body">
@@ -123,6 +123,7 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
                             <div className="search-section">
                                 <label>Search for a user</label>
                                 <input
+                                    className="form-input"
                                     type="text"
                                     placeholder="Username, first name, or last name..."
                                     value={searchQuery}
@@ -193,6 +194,7 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
                             <div className="message-section">
                                 <label>Add a message (optional)</label>
                                 <textarea
+                                    className="form-textarea"
                                     placeholder="Collab on this DONUT with me..."
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
@@ -204,16 +206,16 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
                         </>
                     )}
 
-                    {error && <div className="error-message">{error}</div>}
+                    {error && <div className="modal-error">{error}</div>}
                 </div>
 
                 <div className="modal-footer">
-                    <button className="cancel-button" onClick={handleClose}>
+                    <button className="btn btn-theme-secondary" onClick={handleClose}>
                         Cancel
                     </button>
                     {selectedUser && (
                         <button
-                            className="send-button"
+                            className="btn btn-theme-primary"
                             onClick={handleSendInvite}
                             disabled={loading}
                         >

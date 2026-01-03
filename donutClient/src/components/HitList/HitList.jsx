@@ -252,7 +252,7 @@ function HitList({ projectId, trackId }) {
                 <div className="header-left">
                     {isTrackLevel && currentTrack && (
                         <button
-                            className="track-play-btn"
+                            className="btn-play"
                             onClick={handlePlayTrack}
                             title={playingTrack?.id === currentTrack.id && isPlaying ? 'Pause track' : 'Play track'}
                         >

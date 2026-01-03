@@ -126,7 +126,7 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
 
                     <div className="card-actions">
                         <button
-                            className="save-btn"
+                            className="btn btn-theme-primary"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 onSave(item)
@@ -136,7 +136,7 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
                             Save
                         </button>
                         <button
-                            className="cancel-btn"
+                            className="btn btn-theme-secondary"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 // If it's a new item with no content, delete it
@@ -220,7 +220,7 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
                         </div>
                         <div className="card-controls">
                             <button
-                                className="done-btn"
+                                className="btn btn-theme-primary"
                                 onClick={(e) => {
                                     e.stopPropagation()
                                     onMarkDone(item.id)
@@ -230,7 +230,7 @@ function Card({ item, onEdit, onDelete, onMarkDone, onSave, onUpdateItem, onAddB
                                 Done
                             </button>
                             <button
-                                className="edit-btn"
+                                className="btn btn-theme-secondary"
                                 onClick={(e) => {
                                     e.stopPropagation()
                                     onEdit(item.id)
@@ -427,7 +427,7 @@ function CommentsModal({ item, onClose }) {
                             <span className={`priority-badge priority-${priority.level}`}>{priority.name}</span>
                         </div>
                     </div>
-                    <button className="modal-close-btn" onClick={onClose}>×</button>
+                    <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
                 <div className="modal-body">
@@ -446,12 +446,12 @@ function CommentsModal({ item, onClose }) {
                         <h3>Comments ({isLoading ? '...' : comments.length})</h3>
 
                         {isLoading ? (
-                            <p className="no-comments">Loading comments...</p>
+                            <p className="empty-state-theme">Loading comments...</p>
                         ) : (
                             <>
                                 <div className="comments-list">
                                     {comments.length === 0 ? (
-                                        <p className="no-comments">No comments yet. Be the first to comment!</p>
+                                        <p className="empty-state-theme">No comments yet. Be the first to comment!</p>
                                     ) : (
                                         comments.map(comment => {
                                             const isOwnComment = currentUser && comment.author.id === currentUser.id
@@ -485,14 +485,14 @@ function CommentsModal({ item, onClose }) {
                                                             />
                                                             <div className="comment-edit-actions">
                                                                 <button
-                                                                    className="comment-save-btn"
+                                                                    className="btn btn-theme-primary btn-sm"
                                                                     onClick={() => handleEditComment(comment.id)}
                                                                     disabled={!editText.trim()}
                                                                 >
                                                                     Save
                                                                 </button>
                                                                 <button
-                                                                    className="comment-cancel-btn"
+                                                                    className="btn btn-theme-secondary btn-sm"
                                                                     onClick={cancelEditing}
                                                                 >
                                                                     Cancel
@@ -505,14 +505,14 @@ function CommentsModal({ item, onClose }) {
                                                             {isOwnComment && (
                                                                 <div className="comment-actions">
                                                                     <button
-                                                                        className="comment-edit-btn"
+                                                                        className="btn btn-theme-secondary btn-sm"
                                                                         onClick={() => startEditingComment(comment)}
                                                                         title="Edit comment"
                                                                     >
                                                                         Edit
                                                                     </button>
                                                                     <button
-                                                                        className="comment-delete-btn"
+                                                                        className="btn btn-theme-secondary btn-sm"
                                                                         onClick={() => handleDeleteComment(comment.id)}
                                                                         title="Delete comment"
                                                                     >
@@ -541,7 +541,7 @@ function CommentsModal({ item, onClose }) {
                                         }}
                                     />
                                     <button
-                                        className="add-comment-btn"
+                                        className="btn btn-theme-primary"
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim()}
                                     >
@@ -947,7 +947,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
     }
 
     if (isLoading) {
-        return <div className="kanban-loading">Loading...</div>
+        return <div className="loading-message-theme">Loading...</div>
     }
 
     const cycleCategory = () => {
@@ -1184,7 +1184,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                             )}
                         </div>
                     ) : (
-                        <div className="empty-done">
+                        <div className="empty-state-theme">
                             <p>Mark items as done to see them here</p>
                         </div>
                     )}
