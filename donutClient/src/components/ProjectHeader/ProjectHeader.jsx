@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { getAuthHeaders } from '../../utils/auth'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import './ProjectHeader.css'
 
@@ -40,7 +41,7 @@ function ProjectHeader({
         try {
             const response = await fetch(`http://localhost:5000/api/projects/${project.id}/artwork`, {
                 method: 'POST',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 body: formData
             })
 

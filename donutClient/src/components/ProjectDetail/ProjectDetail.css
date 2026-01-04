@@ -380,7 +380,8 @@
 }
 
 .play-btn,
-.more-btn {
+.more-btn,
+.version-btn {
   background: none;
   border: 1px solid var(--theme-primary);
   color: var(--theme-primary);
@@ -393,12 +394,46 @@
   justify-content: center;
   transition: all 0.2s ease;
   font-size: 0.85rem;
+  position: relative;
 }
 
 .play-btn:hover,
-.more-btn:hover {
+.more-btn:hover,
+.version-btn:hover {
   background: var(--theme-primary);
   color: white;
+}
+
+/* Version Button Styling */
+.version-btn {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.version-btn .version-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.version-btn .version-add {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.version-btn:hover .version-number {
+  opacity: 0;
+}
+
+.version-btn:hover .version-add {
+  opacity: 1;
 }
 
 /* Collaborators Section */

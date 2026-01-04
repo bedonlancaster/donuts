@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
+import { getAuthHeaders } from '../../utils/auth'
 import donutLogo from '../../assets/donut.logo.actual.png'
 import donutsText from '../../assets/donuts.text.actual.png'
 import InvitationNotifications from '../InvitationNotifications/InvitationNotifications'
@@ -23,10 +24,7 @@ function Dashboard({ user, onLogout }) {
             try {
                 const response = await fetch('http://localhost:5000/api/projects', {
                     method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: getAuthHeaders()
                 })
                 if (response.ok) {
                     const projectsData = await response.json()
@@ -53,10 +51,7 @@ function Dashboard({ user, onLogout }) {
         try {
             const response = await fetch('http://localhost:5000/api/invitations/count/pending', {
                 method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: getAuthHeaders()
             })
             if (response.ok) {
                 const data = await response.json()
@@ -75,10 +70,7 @@ function Dashboard({ user, onLogout }) {
             try {
                 const response = await fetch('http://localhost:5000/api/projects', {
                     method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: getAuthHeaders()
                 })
                 if (response.ok) {
                     const projectsData = await response.json()
@@ -96,10 +88,7 @@ function Dashboard({ user, onLogout }) {
         try {
             const response = await fetch('http://localhost:5000/api/projects', {
                 method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: getAuthHeaders()
             })
             if (response.ok) {
                 const projectsData = await response.json()
@@ -117,7 +106,7 @@ function Dashboard({ user, onLogout }) {
         try {
             await fetch('http://localhost:5000/api/auth/logout', {
                 method: 'POST',
-                credentials: 'include'
+                headers: getAuthHeaders()
             })
         } catch (error) {
             console.error('Logout error:', error)

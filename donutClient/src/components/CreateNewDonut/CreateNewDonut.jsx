@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
+import { getAuthHeaders, getAuthHeadersForFormData } from '../../utils/auth'
 import InviteCollaboratorModal from '../InviteCollaborator/InviteCollaboratorModal'
 import './CreateNewDonut.css'
 
@@ -222,7 +223,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 body: JSON.stringify(projectData),
             })
 
@@ -237,7 +238,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
 
                         const artworkResponse = await fetch(`http://localhost:5000/api/projects/${newProject.id}/artwork`, {
                             method: 'POST',
-                            credentials: 'include',
+                            headers: getAuthHeaders(),
                             body: artworkFormData
                         })
 
@@ -264,7 +265,7 @@ function CreateNewDonut({ user, onBack, onSuccess }) {
                         try {
                             const inviteResponse = await fetch('http://localhost:5000/api/invitations/send', {
                                 method: 'POST',
-                                credentials: 'include',
+                                headers: getAuthHeaders(),
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },

@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
+import { getAuthHeaders, getAuthHeadersForFormData } from '../../utils/auth';
 import KanbanHitList from '../HitList/KanbanHitList';
 import ProjectHeader from '../ProjectHeader/ProjectHeader';
 import InviteCollaboratorModal from '../InviteCollaborator/InviteCollaboratorModal';
+import VersionUploadModal from '../VersionUploadModal/VersionUploadModal';
 // import donutLogo from '../../assets/donut.logo.actual.png';
 import './ProjectDetail.css';
 
@@ -135,6 +137,8 @@ function ProjectDetail({ user, onLogout }) {
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [openRoleDropdown, setOpenRoleDropdown] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedTrackForVersion, setSelectedTrackForVersion] = useState(null);
+  const [showVersionUploadModal, setShowVersionUploadModal] = useState(false);
   const roleDropdownRef = useRef(null);
 
   // Theme is set by ThemeLoader; no need to set theme here
@@ -201,10 +205,7 @@ function ProjectDetail({ user, onLogout }) {
           `http://localhost:5000/api/projects/${projectId}`,
           {
             method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
           }
         );
 
@@ -248,7 +249,7 @@ function ProjectDetail({ user, onLogout }) {
         `http://localhost:5000/api/projects/${projectId}/collaborators/${collaboratorId}/role`,
         {
           method: 'PATCH',
-          credentials: 'include',
+          headers: getAuthHeaders(),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -285,6 +286,23 @@ function ProjectDetail({ user, onLogout }) {
       const trackList = project.tracks || [];
       playTrack(track, trackList, project);
     }
+  };
+
+  const handleAddVersion = (track) => {
+    setSelectedTrackForVersion(track);
+    setShowVersionUploadModal(true);
+  };
+
+  const handleVersionUploadSuccess = (updatedTrack) => {
+    // Update the track in the project state
+    setProject((prev) => ({
+      ...prev,
+      tracks: prev.tracks.map((t) =>
+        t.id === updatedTrack.id ? updatedTrack : t
+      ),
+    }));
+    setShowVersionUploadModal(false);
+    setSelectedTrackForVersion(null);
   };
 
   // Drag and drop handlers - memoized to prevent re-creation
@@ -359,7 +377,7 @@ function ProjectDetail({ user, onLogout }) {
       `http://localhost:5000/api/projects/${projectId}/tracks/reorder`,
       {
         method: 'POST',
-        credentials: 'include',
+        headers: getAuthHeaders(),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -392,7 +410,7 @@ function ProjectDetail({ user, onLogout }) {
         `http://localhost:5000/api/projects/${projectId}`,
         {
           method: 'PUT',
-          credentials: 'include',
+          headers: getAuthHeaders(),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -427,7 +445,7 @@ function ProjectDetail({ user, onLogout }) {
         `http://localhost:5000/api/projects/${projectId}`,
         {
           method: 'DELETE',
-          credentials: 'include',
+          headers: getAuthHeaders(),
         }
       );
 
@@ -455,7 +473,7 @@ function ProjectDetail({ user, onLogout }) {
         `http://localhost:5000/api/projects/${projectId}`,
         {
           method: 'PUT',
-          credentials: 'include',
+          headers: getAuthHeaders(),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -572,9 +590,8 @@ function ProjectDetail({ user, onLogout }) {
             Hit List
           </button>
           <button
-            className={`tab-btn ${
-              activeTab === 'collaborators' ? 'active' : ''
-            }`}
+            className={`tab-btn ${activeTab === 'collaborators' ? 'active' : ''
+              }`}
             onClick={() => setActiveTab('collaborators')}
             style={{
               color:
@@ -646,9 +663,8 @@ function ProjectDetail({ user, onLogout }) {
                 {project.tracks.map((track, index) => (
                   <div
                     key={track.id}
-                    className={`track-item ${
-                      dragOverIndex === index ? 'drag-over' : ''
-                    } ${draggedTrack?.index === index ? 'dragging' : ''}`}
+                    className={`track-item ${dragOverIndex === index ? 'drag-over' : ''
+                      } ${draggedTrack?.index === index ? 'dragging' : ''}`}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, track, index)}
                     onDragEnd={handleDragEnd}
@@ -688,23 +704,31 @@ function ProjectDetail({ user, onLogout }) {
                         onMouseDown={(e) => e.stopPropagation()}
                         title={
                           currentTrack &&
-                          currentTrack.id === track.id &&
-                          isPlaying
+                            currentTrack.id === track.id &&
+                            isPlaying
                             ? 'Pause'
                             : 'Play'
                         }
                       >
                         {currentTrack &&
-                        currentTrack.id === track.id &&
-                        isPlaying
+                          currentTrack.id === track.id &&
+                          isPlaying
                           ? '⏸'
                           : '▶'}
                       </button>
                       <button
-                        className="more-btn"
+                        className="version-btn"
                         onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddVersion(track);
+                        }}
+                        title={`Current: v${track.currentVersionNumber || 1} (${track.versionCount || 1} version${track.versionCount !== 1 ? 's' : ''})\nClick to add new version`}
                       >
-                        ⋯
+                        <span className="version-number">
+                          v{track.currentVersionNumber || 1}
+                        </span>
+                        <span className="version-add">+</span>
                       </button>
                       <div className="drag-handle" title="Drag to reorder">
                         ⋮⋮
@@ -772,11 +796,10 @@ function ProjectDetail({ user, onLogout }) {
                             ([roleValue, roleInfo]) => (
                               <div
                                 key={roleValue}
-                                className={`role-option ${
-                                  collaborator.role === parseInt(roleValue)
+                                className={`role-option ${collaborator.role === parseInt(roleValue)
                                     ? 'active'
                                     : ''
-                                }`}
+                                  }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRoleChange(
@@ -965,7 +988,7 @@ function ProjectDetail({ user, onLogout }) {
                         'http://localhost:5000/api/maintenance/update-track-durations',
                         {
                           method: 'POST',
-                          credentials: 'include',
+                          headers: getAuthHeaders(),
                           headers: { 'Content-Type': 'application/json' },
                         }
                       );
@@ -1102,6 +1125,17 @@ function ProjectDetail({ user, onLogout }) {
           setShowInviteModal(false);
         }}
       />
+
+      {showVersionUploadModal && selectedTrackForVersion && (
+        <VersionUploadModal
+          track={selectedTrackForVersion}
+          onClose={() => {
+            setShowVersionUploadModal(false);
+            setSelectedTrackForVersion(null);
+          }}
+          onSuccess={handleVersionUploadSuccess}
+        />
+      )}
     </div>
   );
 }

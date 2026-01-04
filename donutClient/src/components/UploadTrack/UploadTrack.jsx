@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { getAuthHeaders, getAuthHeadersForFormData } from '../../utils/auth';
 import donutLogo from '../../assets/donut.logo.actual.png';
 import './UploadTrack.css';
 
@@ -23,10 +24,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
           `http://localhost:5000/api/projects/${projectId}`,
           {
             method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
           }
         );
 
@@ -115,7 +113,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
 
       const response = await fetch(`http://localhost:5000/api/tracks/upload`, {
         method: 'POST',
-        credentials: 'include',
+        headers: getAuthHeadersForFormData(),
         body: uploadData, // Don't set Content-Type header for FormData
       });
 
@@ -142,7 +140,7 @@ function UploadTrack({ user, onLogout, onBack, onSuccess }) {
     try {
       await fetch('http://localhost:5000/api/auth/logout', {
         method: 'POST',
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
     } catch (error) {
       console.error('Logout error:', error);

@@ -49,16 +49,16 @@ function AuthForm({ onBack, onLoginSuccess }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // Important for cookies
                 body: JSON.stringify(formData),
             })
 
             if (response.ok) {
-                const userData = await response.json()
+                const data = await response.json()
 
-                // Store user data and redirect to dashboard
-                localStorage.setItem('user', JSON.stringify(userData))
-                onLoginSuccess(userData)
+                // Store JWT token and user data
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user', JSON.stringify(data.user))
+                onLoginSuccess(data.user)
             } else {
                 const errorData = await response.json()
                 if (response.status === 401) {

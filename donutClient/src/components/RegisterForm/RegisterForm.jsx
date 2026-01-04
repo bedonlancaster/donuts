@@ -127,8 +127,11 @@ function RegisterForm({ onBack, onSuccess }) {
             })
 
             if (response.ok) {
-                const userData = await response.json()
-                onSuccess?.(userData)
+                const data = await response.json()
+                // Store JWT token and user data
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user', JSON.stringify(data.user))
+                onSuccess?.(data.user)
             } else {
                 const errorData = await response.json()
 

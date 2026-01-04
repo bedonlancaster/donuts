@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { getPaletteStringFromEnum } from '../utils/themeUtils';
+import { getAuthHeaders } from '../utils/auth';
 
 // This loader fetches project or track data, sets the theme, and only renders children after theme is set
 export default function ThemeLoader({ children }) {
@@ -20,14 +21,14 @@ export default function ThemeLoader({ children }) {
                 let themeData;
                 if (location.pathname.includes('/track/')) {
                     // Track detail: fetch track, get project from track
-                    const res = await fetch(`http://localhost:5000/api/tracks/${trackId}`, { credentials: 'include' });
+                    const res = await fetch(`http://localhost:5000/api/tracks/${trackId}`, { headers: getAuthHeaders() });
                     if (!res.ok) throw new Error('Track not found');
                     const track = await res.json();
                     themeData = track.project?.theme;
                 } else {
                     // Project detail: fetch project
                     const pid = projectId || routeProjectId;
-                    const res = await fetch(`http://localhost:5000/api/projects/${pid}`, { credentials: 'include' });
+                    const res = await fetch(`http://localhost:5000/api/projects/${pid}`, { headers: getAuthHeaders() });
                     if (!res.ok) throw new Error('Project not found');
                     const project = await res.json();
                     themeData = project.theme;

@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using DonutAPI.Models;
 using DonutAPI.DTOs;
 
@@ -11,29 +15,56 @@ namespace DonutAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AuthController(UserManager<User> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _configuration = configuration;
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+            var key = Encoding.ASCII.GetBytes(secretKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                    new Claim(ClaimTypes.Email, user.Email ?? ""),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                }),
+                Expires = DateTime.UtcNow.AddDays(int.Parse(jwtSettings["ExpirationInDays"] ?? "7")),
+                Issuer = jwtSettings["Issuer"],
+                Audience = jwtSettings["Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+        public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto registerDto)
         {
             // Check if user already exists
             var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existingUser != null)
             {
-                return BadRequest("User with this email already exists");
+                return BadRequest(new { message = "User with this email already exists" });
             }
 
             // Check if username already exists
             var existingUsername = await _userManager.FindByNameAsync(registerDto.Username);
             if (existingUsername != null)
             {
-                return BadRequest("Username is already taken");
+                return BadRequest(new { message = "Username is already taken" });
             }
 
             // Create new user
@@ -49,43 +80,49 @@ namespace DonutAPI.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors);
+                return BadRequest(new { message = "Registration failed", errors = result.Errors });
             }
 
-            // Automatically sign in the user after successful registration
-            await _signInManager.SignInAsync(user, isPersistent: true);
+            // Generate JWT token
+            var token = GenerateJwtToken(user);
 
-            // Return user info (without password)
-            var userDto = user.ToUserDto();
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, userDto);
+            return Ok(new AuthResponseDto
+            {
+                Token = token,
+                User = user.ToUserDto()
+            });
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
+        public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
-                return Unauthorized("Invalid email or password");
+                return Unauthorized(new { message = "Invalid email or password" });
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, isPersistent: true, lockoutOnFailure: false);
-            if (!result.Succeeded)
+            var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!result)
             {
-                return Unauthorized("Invalid email or password");
+                return Unauthorized(new { message = "Invalid email or password" });
             }
 
-            var userDto = user.ToUserDto();
+            // Generate JWT token
+            var token = GenerateJwtToken(user);
 
-            return Ok(userDto);
+            return Ok(new AuthResponseDto
+            {
+                Token = token,
+                User = user.ToUserDto()
+            });
         }
 
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
-            await _signInManager.SignOutAsync();
+            // With JWT, logout is handled client-side by removing the token
             return Ok(new { message = "Logged out successfully" });
         }
 

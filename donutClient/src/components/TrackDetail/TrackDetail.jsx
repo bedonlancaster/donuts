@@ -182,12 +182,15 @@ function TrackDetail({ user, onLogout }) {
     )
       return;
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(
         `http://localhost:5000/api/tracks/${trackId}`,
         {
           method: 'DELETE',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
       if (response.ok) {
@@ -207,12 +210,13 @@ function TrackDetail({ user, onLogout }) {
     const newStatus = track.status === 1 ? 2 : 1;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(
         `http://localhost:5000/api/tracks/${trackId}`,
         {
           method: 'PUT',
-          credentials: 'include',
           headers: {
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -237,12 +241,13 @@ function TrackDetail({ user, onLogout }) {
     const newStatus = project.status === 1 ? 2 : 1;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(
         `http://localhost:5000/api/projects/${projectId}`,
         {
           method: 'PUT',
-          credentials: 'include',
           headers: {
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -298,12 +303,13 @@ function TrackDetail({ user, onLogout }) {
           setIsNavigating(true);
         }
 
+        const token = localStorage.getItem('token');
         const response = await fetch(
           `http://localhost:5000/api/tracks/${trackId}`,
           {
             method: 'GET',
-            credentials: 'include',
             headers: {
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           }
@@ -324,12 +330,13 @@ function TrackDetail({ user, onLogout }) {
             trackData.project &&
             trackData.project.id
           ) {
+            const token = localStorage.getItem('token');
             const projectResponse = await fetch(
               `http://localhost:5000/api/projects/${trackData.project.id}`,
               {
                 method: 'GET',
-                credentials: 'include',
                 headers: {
+                  Authorization: `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
               }
@@ -413,8 +420,10 @@ function TrackDetail({ user, onLogout }) {
         `http://localhost:5000/api/projects/${projectId}`,
         {
           method: 'GET',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
         }
       );
 
@@ -628,9 +637,10 @@ function TrackDetail({ user, onLogout }) {
                 </div>
               )}
               <p className="track-meta">
-                Track #{track.orderIndex} • Uploaded by{' '}
-                {track.uploadedBy?.username}
-                {track.duration && ` • ${formatDuration(track.duration)}`}
+                Track #{track.orderIndex} • Created by{' '}
+                {track.createdBy?.username}
+                {track.currentVersion?.duration && ` • ${formatDuration(track.currentVersion.duration)}`}
+                {track.currentVersion && ` • v${track.currentVersion.versionNumber}`}
               </p>
               <button
                 className="play-btn track-play-btn"
@@ -650,14 +660,19 @@ function TrackDetail({ user, onLogout }) {
             <div className="track-details-grid">
               <div className="detail-item">
                 <label>File Type</label>
-                <span>{track.fileType?.toUpperCase() || 'Unknown'}</span>
+                <span>{track.currentVersion?.fileType?.toUpperCase() || 'Unknown'}</span>
               </div>
 
               <div className="detail-item">
                 <label>Duration</label>
                 <span>
-                  {track.duration ? formatDuration(track.duration) : 'Unknown'}
+                  {track.currentVersion?.duration ? formatDuration(track.currentVersion.duration) : 'Unknown'}
                 </span>
+              </div>
+
+              <div className="detail-item">
+                <label>Versions</label>
+                <span>{track.versionCount || 1} version{track.versionCount !== 1 ? 's' : ''}</span>
               </div>
 
               <div className="detail-item">
@@ -671,8 +686,8 @@ function TrackDetail({ user, onLogout }) {
                   {track.status === 1
                     ? 'Doing'
                     : track.status === 2
-                    ? 'Done'
-                    : track.status}
+                      ? 'Done'
+                      : track.status}
                 </span>
               </div>
 

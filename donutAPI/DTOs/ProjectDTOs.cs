@@ -147,16 +147,21 @@ namespace DonutAPI.DTOs
         public UserDto AddedBy { get; set; } = null!;
     }
 
-    // For track responses (basic for now)
+    // For track responses in project context (simplified, with current version info)
     public class TrackDto
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
+        public int OrderIndex { get; set; }
+        public TrackStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public UserDto CreatedBy { get; set; } = null!;
+
+        // Current version info (convenience fields from current version)
         public string? FileUrl { get; set; }
         public string? FileType { get; set; }
         public TimeSpan? Duration { get; set; }
-        public int OrderIndex { get; set; }
-        public TrackStatus Status { get; set; }
-        public UserDto UploadedBy { get; set; } = null!;
+        public int? CurrentVersionNumber { get; set; }
+        public int VersionCount { get; set; }
     }
 }

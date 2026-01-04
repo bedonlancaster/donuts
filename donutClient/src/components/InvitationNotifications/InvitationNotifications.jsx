@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../../utils/auth';
 import './InvitationNotifications.css';
 
 function InvitationNotifications({ isOpen, onClose, onInvitationAccepted }) {
@@ -18,7 +19,7 @@ function InvitationNotifications({ isOpen, onClose, onInvitationAccepted }) {
         try {
             const response = await fetch('http://localhost:5000/api/invitations/received/pending', {
                 method: 'GET',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -45,7 +46,7 @@ function InvitationNotifications({ isOpen, onClose, onInvitationAccepted }) {
         try {
             const response = await fetch(`http://localhost:5000/api/invitations/${invitationId}/respond`, {
                 method: 'POST',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: {
                     'Content-Type': 'application/json'
                 },

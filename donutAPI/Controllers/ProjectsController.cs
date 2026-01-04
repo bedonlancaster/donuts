@@ -38,7 +38,9 @@ namespace DonutAPI.Controllers
                 .Include(p => p.Collaborators)
                     .ThenInclude(c => c.AddedBy)
                 .Include(p => p.Tracks)
-                    .ThenInclude(t => t.UploadedBy)
+                    .ThenInclude(t => t.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.Versions)
                 .Include(p => p.HitListItems)
                 .Where(p => p.CreatedById == user.Id ||
                            p.Collaborators.Any(c => c.UserId == user.Id && c.Status == CollaboratorStatus.Active))
@@ -65,17 +67,7 @@ namespace DonutAPI.Controllers
                             JoinedAt = c.JoinedAt,
                             AddedBy = c.AddedBy.ToUserDto()
                         }).ToList(),
-                Tracks = p.Tracks.Select(t => new TrackDto
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    FileUrl = t.FileUrl,
-                    FileType = t.FileType,
-                    Duration = t.Duration,
-                    OrderIndex = t.OrderIndex,
-                    Status = t.Status,
-                    UploadedBy = t.UploadedBy.ToUserDto()
-                }).ToList(),
+                Tracks = p.Tracks.Select(t => MapToTrackDto(t)).ToList(),
                 TrackCount = p.Tracks.Count,
                 HitListItemCount = p.HitListItems.Count,
                 TotalDuration = CalculateTotalDuration(p.Tracks)
@@ -97,7 +89,9 @@ namespace DonutAPI.Controllers
                 .Include(p => p.Collaborators)
                     .ThenInclude(c => c.AddedBy)
                 .Include(p => p.Tracks)
-                    .ThenInclude(t => t.UploadedBy)
+                    .ThenInclude(t => t.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.Versions)
                 .Include(p => p.HitListItems)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -138,17 +132,7 @@ namespace DonutAPI.Controllers
                         }).ToList(),
                 Tracks = project.Tracks
                     .OrderBy(t => t.OrderIndex)
-                    .Select(t => new TrackDto
-                    {
-                        Id = t.Id,
-                        Title = t.Title,
-                        FileUrl = t.FileUrl,
-                        FileType = t.FileType,
-                        Duration = t.Duration,
-                        OrderIndex = t.OrderIndex,
-                        Status = t.Status,
-                        UploadedBy = t.UploadedBy.ToUserDto()
-                    }).ToList(),
+                    .Select(t => MapToTrackDto(t)).ToList(),
                 TrackCount = project.Tracks.Count,
                 HitListItemCount = project.HitListItems.Count,
                 TotalDuration = CalculateTotalDuration(project.Tracks)
@@ -359,36 +343,27 @@ namespace DonutAPI.Controllers
                 .Include(p => p.CreatedBy)
                 .Include(p => p.Theme)
                 .Include(p => p.Tracks)
-                    .ThenInclude(t => t.UploadedBy)
+                    .ThenInclude(t => t.CreatedBy)
+                .Include(p => p.Tracks)
+                    .ThenInclude(t => t.Versions)
                 .Include(p => p.HitListItems)
                 .Where(p => p.CreatedById == user.Id)
-                .Select(p => new ProjectDto
-                {
-                    Id = p.Id,
-                    Title = p.Title,
-                    ArtistName = p.ArtistName,
-                    Description = p.Description,
-                    ArtworkUrl = p.ArtworkUrl,
-                    Status = p.Status,
-                    CreatedBy = p.CreatedBy.ToUserDto(),
-                    Theme = p.Theme != null ? MapThemeToDto(p.Theme) : null,
-                    Tracks = p.Tracks.Select(t => new TrackDto
-                    {
-                        Id = t.Id,
-                        Title = t.Title,
-                        FileUrl = t.FileUrl,
-                        FileType = t.FileType,
-                        Duration = t.Duration,
-                        OrderIndex = t.OrderIndex,
-                        Status = t.Status,
-                        UploadedBy = t.UploadedBy.ToUserDto()
-                    }).ToList(),
-                    TrackCount = p.Tracks.Count,
-                    HitListItemCount = p.HitListItems.Count
-                })
                 .ToListAsync();
 
-            return Ok(projects);
+            return Ok(projects.Select(p => new ProjectDto
+            {
+                Id = p.Id,
+                Title = p.Title,
+                ArtistName = p.ArtistName,
+                Description = p.Description,
+                ArtworkUrl = p.ArtworkUrl,
+                Status = p.Status,
+                CreatedBy = p.CreatedBy.ToUserDto(),
+                Theme = p.Theme != null ? MapThemeToDto(p.Theme) : null,
+                Tracks = p.Tracks.Select(t => MapToTrackDto(t)).ToList(),
+                TrackCount = p.Tracks.Count,
+                HitListItemCount = p.HitListItems.Count
+            }));
         }
 
         // POST: api/projects/5/collaborators
@@ -727,12 +702,13 @@ namespace DonutAPI.Controllers
             return Ok(new { message = "Track order updated successfully" });
         }
 
-        // Helper method to calculate total duration from a collection of tracks
+        // Helper method to calculate total duration from tracks (using current versions)
         private static TimeSpan? CalculateTotalDuration(IEnumerable<Track> tracks)
         {
             var trackDurations = tracks
-                .Where(t => t.Duration.HasValue)
-                .Select(t => t.Duration!.Value)
+                .Select(t => t.Versions.FirstOrDefault(v => v.IsCurrentVersion)?.Duration)
+                .Where(d => d.HasValue)
+                .Select(d => d!.Value)
                 .ToList();
 
             if (trackDurations.Count == 0)
@@ -741,6 +717,26 @@ namespace DonutAPI.Controllers
             }
 
             return trackDurations.Aggregate(TimeSpan.Zero, (sum, duration) => sum + duration);
+        }
+
+        // Helper to map Track to TrackDto with current version info
+        private static TrackDto MapToTrackDto(Track track)
+        {
+            var currentVersion = track.Versions.FirstOrDefault(v => v.IsCurrentVersion);
+            return new TrackDto
+            {
+                Id = track.Id,
+                Title = track.Title,
+                OrderIndex = track.OrderIndex,
+                Status = track.Status,
+                CreatedAt = track.CreatedAt,
+                CreatedBy = track.CreatedBy.ToUserDto(),
+                FileUrl = currentVersion?.FileUrl,
+                FileType = currentVersion?.FileType,
+                Duration = currentVersion?.Duration,
+                CurrentVersionNumber = currentVersion?.VersionNumber,
+                VersionCount = track.Versions.Count
+            };
         }
     }
 }

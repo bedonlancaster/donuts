@@ -15,6 +15,7 @@ namespace DonutAPI.Data
         public DbSet<ProjectCollaborator> ProjectCollaborators { get; set; }
         public DbSet<ProjectInvitation> ProjectInvitations { get; set; }
         public DbSet<Track> Tracks { get; set; }
+        public DbSet<TrackVersion> TrackVersions { get; set; }
         public DbSet<HitListItem> HitListItems { get; set; }
         public DbSet<HitListItemComment> HitListItemComments { get; set; }
         public DbSet<Session> Sessions { get; set; }
@@ -54,12 +55,34 @@ namespace DonutAPI.Data
                     .HasForeignKey(t => t.ProjectId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(t => t.UploadedBy)
-                    .WithMany(u => u.UploadedTracks)
-                    .HasForeignKey(t => t.UploadedById)
+                entity.HasOne(t => t.CreatedBy)
+                    .WithMany(u => u.CreatedTracks)
+                    .HasForeignKey(t => t.CreatedById)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.Property(e => e.Status).HasConversion<int>();
+            });
+
+            // TrackVersion relationships
+            modelBuilder.Entity<TrackVersion>(entity =>
+            {
+                entity.HasOne(tv => tv.Track)
+                    .WithMany(t => t.Versions)
+                    .HasForeignKey(tv => tv.TrackId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(tv => tv.UploadedBy)
+                    .WithMany(u => u.UploadedTrackVersions)
+                    .HasForeignKey(tv => tv.UploadedById)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Ensure only one version per track is marked as current
+                entity.HasIndex(tv => new { tv.TrackId, tv.IsCurrentVersion })
+                    .HasFilter("[IsCurrentVersion] = 1");
+
+                // Ensure unique version numbers per track
+                entity.HasIndex(tv => new { tv.TrackId, tv.VersionNumber })
+                    .IsUnique();
             });
 
             // HitListItem relationships and enum conversion

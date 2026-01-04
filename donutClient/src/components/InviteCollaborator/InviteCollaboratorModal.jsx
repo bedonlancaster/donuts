@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../../utils/auth';
 import './InviteCollaboratorModal.css';
 
 function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
@@ -25,7 +26,7 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
             try {
                 const response = await fetch(`http://localhost:5000/api/users/search?q=${encodeURIComponent(searchQuery)}`, {
                     method: 'GET',
-                    credentials: 'include',
+                    headers: getAuthHeaders(),
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -72,7 +73,7 @@ function InviteCollaboratorModal({ projectId, isOpen, onClose, onInviteSent }) {
         try {
             const response = await fetch('http://localhost:5000/api/invitations/send', {
                 method: 'POST',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: {
                     'Content-Type': 'application/json'
                 },

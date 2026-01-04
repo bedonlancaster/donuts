@@ -18,7 +18,8 @@ namespace DonutAPI.Models
 
         // Navigation Properties
         public virtual ICollection<Project> CreatedProjects { get; set; } = new List<Project>();
-        public virtual ICollection<Track> UploadedTracks { get; set; } = new List<Track>();
+        public virtual ICollection<Track> CreatedTracks { get; set; } = new List<Track>();
+        public virtual ICollection<TrackVersion> UploadedTrackVersions { get; set; } = new List<TrackVersion>();
         public virtual ICollection<HitListItem> CreatedHitListItems { get; set; } = new List<HitListItem>();
         public virtual ICollection<HitListItemComment> HitListItemComments { get; set; } = new List<HitListItemComment>();
         public virtual ICollection<Session> ProducerSessions { get; set; } = new List<Session>();

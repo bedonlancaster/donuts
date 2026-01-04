@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
+import { getAuthHeaders } from '../../utils/auth'
 import './HitList.css'
 
 function HitList({ projectId, trackId }) {
@@ -21,7 +22,7 @@ function HitList({ projectId, trackId }) {
             const fetchTrack = async () => {
                 try {
                     const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
-                        credentials: 'include'
+                        headers: getAuthHeaders()
                     })
                     if (response.ok) {
                         const track = await response.json()
@@ -50,7 +51,7 @@ function HitList({ projectId, trackId }) {
         const fetchHitListItems = async () => {
             try {
                 const response = await fetch(apiEndpoint, {
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
 
                 if (response.ok) {
@@ -143,7 +144,7 @@ function HitList({ projectId, trackId }) {
             try {
                 const response = await fetch(`http://localhost:5000/api/hitlistitems/${itemId}`, {
                     method: 'DELETE',
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
 
                 if (!response.ok) {
@@ -167,7 +168,7 @@ function HitList({ projectId, trackId }) {
                 // Create new item
                 const response = await fetch('http://localhost:5000/api/hitlistitems', {
                     method: 'POST',
-                    credentials: 'include',
+                    headers: getAuthHeaders(),
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -200,7 +201,7 @@ function HitList({ projectId, trackId }) {
                 // Update existing item
                 const response = await fetch(`http://localhost:5000/api/hitlistitems/${item.id}`, {
                     method: 'PUT',
-                    credentials: 'include',
+                    headers: getAuthHeaders(),
                     headers: {
                         'Content-Type': 'application/json'
                     },

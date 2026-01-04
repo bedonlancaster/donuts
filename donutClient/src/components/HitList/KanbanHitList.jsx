@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAudioPlayer } from '../../context/AudioPlayerContext'
+import { getAuthHeaders } from '../../utils/auth'
 import './KanbanHitList.css'
 
 // Category constants - no emojis, use theme colors
@@ -270,7 +271,7 @@ function CommentsModal({ item, onClose }) {
         const fetchCurrentUser = async () => {
             try {
                 const response = await fetch('http://localhost:5000/api/auth/me', {
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
                 if (response.ok) {
                     const user = await response.json()
@@ -298,7 +299,7 @@ function CommentsModal({ item, onClose }) {
                 setIsLoading(true)
                 setError(null)
                 const response = await fetch(`http://localhost:5000/api/hitlistitems/${item.id}/comments`, {
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
 
                 console.log('Comments fetch response:', response.status, 'for item:', item.id)
@@ -339,7 +340,7 @@ function CommentsModal({ item, onClose }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ text: newComment })
             })
 
@@ -365,7 +366,7 @@ function CommentsModal({ item, onClose }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ text: editText })
             })
 
@@ -389,7 +390,7 @@ function CommentsModal({ item, onClose }) {
         try {
             const response = await fetch(`http://localhost:5000/api/hitlistitems/comments/${commentId}`, {
                 method: 'DELETE',
-                credentials: 'include'
+                headers: getAuthHeaders()
             })
 
             if (!response.ok) {
@@ -581,7 +582,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             const fetchTrack = async () => {
                 try {
                     const response = await fetch(`http://localhost:5000/api/tracks/${trackId}`, {
-                        credentials: 'include'
+                        headers: getAuthHeaders()
                     })
                     if (response.ok) {
                         const track = await response.json()
@@ -623,7 +624,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
         const fetchHitListItems = async () => {
             try {
                 const response = await fetch(apiEndpoint, {
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
 
                 if (response.ok) {
@@ -762,7 +763,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                 // Create new item
                 const response = await fetch('http://localhost:5000/api/hitlistitems', {
                     method: 'POST',
-                    credentials: 'include',
+                    headers: getAuthHeaders(),
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title: item.subject,
@@ -796,7 +797,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
                 // Update existing item
                 const response = await fetch(`http://localhost:5000/api/hitlistitems/${item.id}`, {
                     method: 'PUT',
-                    credentials: 'include',
+                    headers: getAuthHeaders(),
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title: item.subject,
@@ -846,7 +847,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             const bulletPointsText = item.bulletPoints.filter(point => point.trim()).join('\n')
             const response = await fetch(`http://localhost:5000/api/hitlistitems/${itemId}`, {
                 method: 'PUT',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: item.subject,
@@ -872,7 +873,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             const bulletPointsText = item.bulletPoints.filter(point => point.trim()).join('\n')
             const response = await fetch(`http://localhost:5000/api/hitlistitems/${itemId}`, {
                 method: 'PUT',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: item.subject,
@@ -898,7 +899,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             try {
                 const response = await fetch(`http://localhost:5000/api/hitlistitems/${itemId}`, {
                     method: 'DELETE',
-                    credentials: 'include'
+                    headers: getAuthHeaders()
                 })
 
                 if (!response.ok) return
@@ -925,7 +926,7 @@ function KanbanHitList({ projectId, trackId, allTracks, currentTrackIndex, onNav
             const bulletPointsText = item.bulletPoints.filter(point => point.trim()).join('\n')
             const response = await fetch(`http://localhost:5000/api/hitlistitems/${itemId}`, {
                 method: 'PUT',
-                credentials: 'include',
+                headers: getAuthHeaders(),
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: item.subject,
